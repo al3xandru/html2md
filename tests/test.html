@@ -1,10 +1,12 @@
-<h2 id="h2id" width="800" style="text-align:right" rel="nofollow external" class="cls1 cls2">A header 2 with id </h2>
+<h1>Common elements</h1>
+
+<h2 id="h2id" style="text-align:right" class="cls1 cls2">A header 2 with id</h2>
 
 <p class="pclass">This could be a paragraph ending with the trick</p>
 
 <blockquote id="bqid">
     <p class="pbqcls">Now this is a blockquote having the same trick at the end.
-  It is a multi paragraph .</p>
+  It is a multi paragraph.</p>
 </blockquote>
 
 <p>I&#8217;ve forgot to put in a paragraph to separate these.</p>
@@ -13,7 +15,7 @@
     <p>This will probably not work.</p>
     <blockquote id="innerbq">
         <p>Inner blockquote not sure it will
-            actually work .</p>
+            actually work.</p>
     </blockquote>
 
     <p>And this is the outer </p>
@@ -37,7 +39,7 @@ a normal <a href="http://yahoo.com" title="some title">link</a>.</p>
 
 <p id="pid" class="andpclass">And now two advanced examples</p>
 
-<p width="800" style="text-align:right" rel="nofollow external">The other one would be</p>
+<p style="text-align:right">The other one would be</p>
 
 <ul>
     <li>simple l 1</li>
@@ -56,6 +58,9 @@ a normal <a href="http://yahoo.com" title="some title">link</a>.</p>
         <p>continuation paragraph</p></li>
     <li><p>paragraph 4</p></li>
 </ol>
+
+
+<h1>Footnotes</h1>
         
 <div class="footnotes">
 <h4>References</h4>
@@ -66,3 +71,55 @@ a footnote&nbsp;(<a href="test.html#fnref-1" class="footnoteBackLink" title="Jum
 </li>
 </ul>
 </div>
+
+
+<h1>Code snippets</h1>
+
+<pre><code>
+project/
+    __init__.py
+    example1.py
+    test/
+        __init__.py
+        test_example1.py
+</code></pre>
+
+<p>Find a Pygments code snippet to see how it works</p>
+
+<pre class="code python literal-block">
+<span class="kn">from</span> <span class="nn">BeautifulSoup</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
+<span class="kn">import</span> <span class="nn">urllib2</span>
+<span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="s">'http://java.sun.com'</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+<span class="n">menu</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">findAll</span><span class="p">(</span><span class="s">'div'</span><span class="p">,</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s">'class'</span><span class="p">:</span><span class="s">'pad'</span><span class="p">})</span>
+<span class="k">for</span> <span class="n">subMenu</span> <span class="ow">in</span> <span class="n">menu</span><span class="p">:</span>
+<span class="n">links</span> <span class="o">=</span> <span class="n">subMenu</span><span class="o">.</span><span class="n">findAll</span><span class="p">(</span><span class="s">'a'</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">links</span><span class="p">:</span>
+<span class="k">print</span> <span class="s">"</span><span class="si">%s</span><span class="s"> : </span><span class="si">%s</span><span class="s">"</span> <span class="o">%</span> <span class="p">(</span><span class="n">link</span><span class="o">.</span><span class="n">string</span><span class="p">,</span> <span class="n">link</span><span class="p">[</span><span class="s">'href'</span><span class="p">])</span>
+</pre>
+
+
+<h1>Special elements</h1>
+
+<p>A series of elements <ins>insert</ins>, <del>delete</del>, <q>quote</q>, <abbr>abbr</abbr>
+that are not natively supported.</p>
+
+<p>Then is time for definition lists:</p>
+
+<dl>
+    <dt>Term 1</dt>
+    <dd>A term definition</dd>
+    <dt>Term 2</dt>
+    <dd>
+        <p>multi paragraph definition</p>
+        <p>not sure this is actually supported</p>
+    </dd>
+</dl>
+
+
+<h1>Embeds</h1>
+
+<p>YouTube:</p>
+
+<p>Slideshare:</p>
+
+<p>Vimeo:</p>
