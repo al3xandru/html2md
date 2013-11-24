@@ -1,10 +1,12 @@
+#!/usr/bin/env python
 # -*- coding: utf8 -*-
+
 import re
 import os
 import sys
 
-from h2m.html2md.BeautifulSoup import ICantBelieveItsBeautifulSoup
-from h2m.html2md.BeautifulSoup import Tag, NavigableString
+from BeautifulSoup import ICantBelieveItsBeautifulSoup
+from BeautifulSoup import Tag, NavigableString
 
 __author__ = 'alex'
 
