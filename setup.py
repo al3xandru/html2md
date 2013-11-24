@@ -3,22 +3,21 @@
 from setuptools import setup, find_packages
 
 
-with open('README.rst') as f:
+with open('README.md') as f:
     readme = f.read()
 
-with open('LICENSE') as f:
+with open('LICENSE.md') as f:
     license = f.read()
 
 setup(
-    name='sample',
-    version='0.0.1',
-    description='Sample package for Python-Guide.org',
+    name='html2md',
+    version='0.1',
+    description='An HTML to Markdown converter inspired by Aaron Swartz\'s html2text' ,
     long_description=readme,
-    author='Kenneth Reitz',
-    author_email='me@kennethreitz.com',
-    url='https://github.com/kennethreitz/samplemod',
+    author='Alex Popescu',
+    author_email='html2md@mypopescu.com',
+    url='https://github.com/al3xandru/html2md',
     license=license,
     packages=find_packages(exclude=('tests', 'docs'))
 )
-
 
