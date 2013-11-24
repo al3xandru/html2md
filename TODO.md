@@ -1,4 +1,4 @@
-*   [ ] Fix list tests
+*   [X] Fix list tests
 *   [ ] Add more tests for multi-level HTML element structures (blockquote, list, pre)
 *   [ ] Add option to disable attributes
 *   [ ] Add option to enable GitHub fenced code snippets
@@ -10,3 +10,5 @@
     <http://pylint-messages.wikidot.com/all-messages>
 
 *   [ ] License (BSD?)
+*   [ ] Add correct item numbers for ordered lists
+*   [ ] Support break lines in paragraphs

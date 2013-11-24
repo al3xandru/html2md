@@ -16,9 +16,9 @@ class ListsTest(unittest.TestCase):
 <li>item 3</li>
 </ul>'''
 
-        out_md = '''*    item 1
-*    item 2
-*    item 3'''
+        out_md = '''*   item 1
+*   item 2
+*   item 3'''
         assertEq(out_md, html2md.html2md(in_html))
 
     def test_imbricated(self):
@@ -34,12 +34,12 @@ class ListsTest(unittest.TestCase):
 <li>item 3</li>
 </ul>
 '''
-        out_md = '''*    item 1
-*    item 2
-     *    item 2.1
-     *    item 2.2
-     *    item 2.3
-*    item 3'''
+        out_md = '''*   item 1
+*   item 2
+    *   item 2.1
+    *   item 2.2
+    *   item 2.3
+*   item 3'''
         assertEq(out_md, html2md.html2md(in_html))
 
     def test_paragraph_items(self):
@@ -50,11 +50,11 @@ class ListsTest(unittest.TestCase):
 <li><p>item 3</p></li>
 </ul>
 '''
-        out_md = '''*    item 1
+        out_md = '''*   item 1
 
-*    item 2
+*   item 2
 
-*    item 3'''
+*   item 3'''
         assertEq(out_md, html2md.html2md(in_html))
 
     def test_twoparagraph_item(self):
@@ -67,12 +67,12 @@ class ListsTest(unittest.TestCase):
 <li>item 3</li>
 </ul>
 '''
-        out_md = '''*    item 1
-*    item 2
+        out_md = '''*   item 1
+*   item 2
 
-     item 2 continued
+    item 2 continued
 
-*    item 3'''
+*   item 3'''
         assertEq(out_md, html2md.html2md(in_html))
 
     def test_multipara_plus_imbricated(self):
@@ -90,15 +90,15 @@ class ListsTest(unittest.TestCase):
 <li>item 3</li>
 </ul>
     '''
-        out_md = '''*    item 1
-*    item 2
+        out_md = '''*   item 1
+*   item 2
 
-     continuation item 2
+    continuation item 2
 
-     *    item 2.1
-     *    item 2.2
+    *   item 2.1
+    *   item 2.2
 
-*    item 3'''
+*   item 3'''
         assertEq(out_md, html2md.html2md(in_html))
 
     def test_complex(self):
@@ -116,15 +116,15 @@ class ListsTest(unittest.TestCase):
 <li><p>item 3</p></li>
 </ul>
 '''
-        out_md = '''*    item 1
-*    item 2
+        out_md = '''*   item 1
+*   item 2
 
-     continuation item 2
+    continuation item 2
 
-     *    item 2.1
-     *    item 2.2
+    *   item 2.1
+    *   item 2.2
 
-*    item 3'''
+*   item 3'''
         assertEq(out_md, html2md.html2md(in_html))
 
 

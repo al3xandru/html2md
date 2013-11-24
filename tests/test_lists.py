@@ -14,9 +14,9 @@ class ListsTest(unittest.TestCase):
 <li>item 2</li>
 <li>item 3</li>
 </ul>'''
-        out_md = '''*    item 1
-*    item 2
-*    item 3'''
+        out_md = '''*   item 1
+*   item 2
+*   item 3'''
         assertEq(out_md, html2md.html2md(in_html))
 
     def test_imbricated(self):
@@ -31,12 +31,12 @@ class ListsTest(unittest.TestCase):
 </li>
 <li>item 3</li>
 </ul>'''
-        out_md = '''*    item 1
-*    item 2
-     1.    sitem 2.1
-     1.    sitem 2.2
-     1.    sitem 2.3
-*    item 3'''
+        out_md = '''*   item 1
+*   item 2
+    1.  sitem 2.1
+    1.  sitem 2.2
+    1.  sitem 2.3
+*   item 3'''
         assertEq(out_md, html2md.html2md(in_html))
 
     def test_paragraph_items(self):
@@ -49,15 +49,15 @@ class ListsTest(unittest.TestCase):
 </li>
 <li>item 3</li>
 </ul>'''
-        out_md = '''*    item 1
+        out_md = '''*   item 1
 
-*    item 2
+*   item 2
 
-     item 2 item 2
+    item 2 item 2
 
-     item 2 item 2 item 2
+    item 2 item 2 item 2
 
-*    item 3'''
+*   item 3'''
         assertEq(out_md, html2md.html2md(in_html))
 
     def test_paragraph_mixed(self):
@@ -70,14 +70,14 @@ class ListsTest(unittest.TestCase):
 <li>item 4</li>
 <li>item 5</li>
 </ul>'''
-        out_md = '''*    item 1
-*    item 2
-*    item 3
+        out_md = '''*   item 1
+*   item 2
+*   item 3
 
-     item 3 paragraph 2
+    item 3 paragraph 2
 
-*    item 4
-*    item 5'''
+*   item 4
+*   item 5'''
         assertEq(out_md, html2md.html2md(in_html))
 
     def test_blockquote(self):
@@ -94,13 +94,13 @@ class ListsTest(unittest.TestCase):
 <li><p>item 3</p></li>
 </ul>
 '''
-        out_md = '''*    > item 1
+        out_md = '''*   > item 1
 
-*    > item 2 paragraph 1
+*   > item 2 paragraph 1
 
-     > item 2 paragraph 2
+    > item 2 paragraph 2
 
-*    item 3'''
+*   item 3'''
         assertEq(out_md, html2md.html2md(in_html))
 
     def test_blockquote_complex(self):
@@ -119,16 +119,16 @@ class ListsTest(unittest.TestCase):
   <p>item 3 blockquote</p>
 </blockquote></li>
 </ul>'''
-        out_md = '''*    item 1
-*    item 2
+        out_md = '''*   item 1
+*   item 2
 
-     > item 2 paragraph 1
+    > item 2 paragraph 1
 
-     > item 2 paragraph 2
+    > item 2 paragraph 2
 
-*    item 3
+*   item 3
 
-     > item 3 blockquote'''
+    > item 3 blockquote'''
         assertEq(out_md, html2md.html2md(in_html))
 
     def test_cheatsheet(self):
@@ -144,19 +144,30 @@ class ListsTest(unittest.TestCase):
 <li><p>Another List item with
 a hard wrapped 2nd line.</p>
 
-<pre><code> 10 PRINT "and a code block"
+<pre><code>
+project/
+    __init__.py
+    example1.py
+    test/
+        __init__.py
+        test_example1.py
 </code></pre></li>
 </ul>'''
-        out_md = '''*    A list item.
+        out_md = '''*   A list item.
 
-     With multiple paragraphs.
+    With multiple paragraphs.
 
-     > And a blockquote
+    > And a blockquote
 
-*    Another List item with
-     a hard wrapped 2nd line.
+*   Another List item with
+    a hard wrapped 2nd line.
 
-         10 PRINT "and a code block"'''
+        project/
+            __init__.py
+            example1.py
+            test/
+                __init__.py
+                test_example1.py'''
         assertEq(out_md, html2md.html2md(in_html))
 
 
