@@ -6,7 +6,7 @@
 
 <blockquote id="bqid">
     <p class="pbqcls">Now this is a blockquote having the same trick at the end.
-  It is a multi paragraph.</p>
+  It is a single paragraph.</p>
 </blockquote>
 
 <p>I&#8217;ve forgot to put in a paragraph to separate these.</p>
@@ -18,7 +18,7 @@
             actually work.</p>
     </blockquote>
 
-    <p>And this is the outer </p>
+    <p>And this is the outer/ending paragraph.</p>
 </blockquote>
 
 <p>And last but not least a list:</p>
@@ -44,18 +44,21 @@ a normal <a href="http://yahoo.com" title="some title">link</a>.</p>
 <ul>
     <li>simple l 1</li>
     <li>simple l 2
-    <ul>
-    <li>inner 2.1</li>
-    <li>inner 2.3</li>
-    </ul></li>
+        <ul>
+        <li>inner 2.1</li>
+        <li>inner 2.3</li>
+        </ul>
+    </li>
     <li>simple l 3</li>
 </ul>
 
 <ol>
     <li><p>paragraph l 1</p></li>
     <li><p>para l 2</p></li>
-    <li><p>para l 3</p>
-        <p>continuation paragraph</p></li>
+    <li>
+        <p>para l 3</p>
+        <p>continuation paragraph</p>
+    </li>
     <li><p>paragraph 4</p></li>
 </ol>
 
@@ -70,6 +73,16 @@ a normal <a href="http://yahoo.com" title="some title">link</a>.</p>
 a footnote&nbsp;(<a href="test.html#fnref-1" class="footnoteBackLink" title="Jump back to footnote 1 in the text.">&#8617;</a>)
 </li>
 </ul>
+</div>
+
+
+<div class="footnote">
+    <hr>
+    <ol>
+        <li id="fn:2-fn-done">
+            <p>I have some vague ideas, but it’s better to learn than to speculate.&nbsp;<a href="#fnref:2-fn-done" rev="footnote" title="Jump back to footnote 1 in the text" target="_blank">↩</a></p>
+        </li>
+    </ol>
 </div>
 
 
@@ -115,11 +128,24 @@ that are not natively supported.</p>
     </dd>
 </dl>
 
+<div>
+    Also DIVs even if they're wrong, they should still work.
+</div>
+
 
 <h1>Embeds</h1>
 
 <p>YouTube:</p>
 
+<iframe width="420" height="315" src="//www.youtube.com/embed/rnujQquKCQY" frameborder="0" allowfullscreen></iframe>
+
 <p>Slideshare:</p>
 
+<iframe src="http://www.slideshare.net/slideshow/embed_code/28512891" width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen> </iframe>
+<div style="margin-bottom:5px"> <strong> <a href="https://www.slideshare.net/subagini/effective-presentation-skills-28512891" title="Effective presentation skills" target="_blank">Effective presentation skills</a> </strong> from <strong><a href="http://www.slideshare.net/subagini" target="_blank">Subagini Manivannan</a></strong> </div>
+
 <p>Vimeo:</p>
+
+<iframe src="//player.vimeo.com/video/78276911?title=0&amp;byline=0&amp;portrait=0&amp;color=ff0000" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+
+<p><a href="http://vimeo.com/78276911">Why I Ride - Ep1: Passion At Work</a> from <a href="http://vimeo.com/alchemycreative">ALCHEMYcreative</a> on <a href="https://vimeo.com">Vimeo</a>.</p>

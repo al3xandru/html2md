@@ -1,0 +1,124 @@
+# Common elements
+
+## A header 2 with id
+
+This could be a paragraph ending with the trick
+
+> Now this is a blockquote having the same trick at the end. It is a single
+paragraph.
+
+I've forgot to put in a paragraph to separate these.
+
+> This will probably not work.
+
+>
+
+>> Inner blockquote not sure it will actually work.
+
+>
+
+> And this is the outer/ending paragraph.
+
+And last but not least a list:
+
+  1. first item .
+  2. second item[[1](test.html#fn-1)]
+  3. third item
+
+There's also [a link](http://yahoo.com) and then `some code`. Does it work
+`[this way](http://yahoo.com "{{rel='external nofollow'}}")`? But I also need
+a normal [link](http://yahoo.com).
+
+Image is exactly the same:
+
+![alt text](http://yahoo.com)
+
+And now two advanced examples
+
+The other one would be
+
+  * simple l 1
+  * simple l 2 
+    * inner 2.1
+    * inner 2.3
+  * simple l 3
+  1. paragraph l 1
+
+  2. para l 2
+
+  3. para l 3
+
+continuation paragraph
+
+  4. paragraph 4
+
+# Footnotes
+
+#### References
+
+  * [1] a footnote&nbsp_place_holder;([↩](test.html#fnref-1)) 
+
+* * *
+
+  1. I have some vague ideas, but it’s better to learn than to speculate.&nbsp_place_holder;↩
+
+# Code snippets
+
+    
+    
+    project/
+        __init__.py
+        example1.py
+        test/
+            __init__.py
+            test_example1.py
+    
+
+Find a Pygments code snippet to see how it works
+
+    
+    
+    from BeautifulSoup import BeautifulSoup
+    import urllib2
+    soup = BeautifulSoup(urllib2.urlopen('http://java.sun.com').read())
+    menu = soup.findAll('div',attrs={'class':'pad'})
+    for subMenu in menu:
+    links = subMenu.findAll('a')
+    for link in links:
+    print "%s : %s" % (link.string, link['href'])
+    
+
+# Special elements
+
+A series of elements insert, <del>delete</del>, quote, abbr that are not
+natively supported.
+
+Then is time for definition lists:
+
+Term 1
+
+    A term definition
+Term 2
+
+    
+
+multi paragraph definition
+
+not sure this is actually supported
+
+Also DIVs even if they're wrong, they should still work.
+
+# Embeds
+
+YouTube:
+
+Slideshare:
+
+** [Effective presentation skills](https://www.slideshare.net/subagini/effective-presentation-skills-28512891) ** from **[Subagini Manivannan](http://www.slideshare.net/subagini)**
+
+Vimeo:
+
+[Why I Ride - Ep1: Passion At Work](http://vimeo.com/78276911) from
+[ALCHEMYcreative](http://vimeo.com/alchemycreative) on
+[Vimeo](https://vimeo.com).
+
