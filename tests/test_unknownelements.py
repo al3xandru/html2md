@@ -6,11 +6,11 @@ from assertions import assertEq
 
 UNPROCESSED_HTML_ELEMENTS = ('abbr', 'area', 'audio', 'aside'
                              'bdi', 'bdo', 'button',
-                             'canvas', 'caption', 'cite', 'col', 'colgroup',
+                             'canvas', 'caption', 'cite', 'colgroup',
                              'data', 'datalist', 'del', 'details', 'dfn',
                              'embed',
                              'fieldset', 'figcaption', 'figure', 'form',
-                             'iframe', 'input', 'ins',
+                             'iframe', 'ins',
                              'kbd', 'keygen',
                              'label', 'legend',
                              'map', 'mark', 'meter',
@@ -19,7 +19,7 @@ UNPROCESSED_HTML_ELEMENTS = ('abbr', 'area', 'audio', 'aside'
                              'param', 'progress',
                              'q',
                              'rp', 'rt', 'ruby',
-                             's', 'samp', 'script', 'select', 'shadow', 'small', 'style', 'sub', 'sup',
+                             's', 'samp', 'script', 'select', 'shadow', 'small', 'style', 'sub',
                              'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'tr', 'track',
                              'var', 'video',
                              'wbr'
@@ -41,7 +41,7 @@ class UnprocessedElements(unittest.TestCase):
             in_html = u'''<p>A paragraph with an <{0}>inserted text</{0}> and existing text.</p>'''.format(tag)
             out_md = u'''A paragraph with an <{0}>inserted text</{0}> and existing text.'''.format(tag)
             try:
-                assertEq(out_md, html2md.html2md(in_html))
+                assertEq(out_md, html2md.html2md(in_html, strip=True))
             except AssertionError, aser:
                 results[tag] = aser
         if results:
@@ -56,9 +56,9 @@ class UnprocessedElements(unittest.TestCase):
         results = {}
         for tag in REMOVED_HTML_ELEMENTS:
             in_html = u'''<p>A paragraph with an <{0}>inserted text</{0}> and existing text.</p>'''.format(tag)
-            out_md = u'''A paragraph with an and existing text.'''.format(tag)
+            out_md = u'''A paragraph with an  and existing text.'''.format(tag)
             try:
-                assertEq(out_md, html2md.html2md(in_html))
+                assertEq(out_md, html2md.html2md(in_html, strip=True))
             except AssertionError, aser:
                 results[tag] = aser
         if results:
@@ -91,6 +91,12 @@ Slideshare:
 **[Effective presentation skills](https://www.slideshare.net/subagini/effective-presentation-skills-28512891 "Effective presentation skills {{target=_blank}}")** from **[Subagini Manivannan](http://www.slideshare.net/subagini "{{target=_blank}}")**'''
 
         assertEq(out_md, html2md.html2md(in_html))
+
+
+def suite():
+    return unittest.TestSuite([unittest.TestLoader().loadTestsFromTestCase(UnprocessedElements),
+                               unittest.TestLoader().loadTestsFromTestCase(BlockElementsTest)])
+
 
 if  __name__ == '__main__':
     unittest.main()

@@ -14,8 +14,8 @@ class BasicTest(unittest.TestCase):
         assertEq(out_md, html2md.html2md(in_html))
 
     def test_a_title(self):
-        in_html = '''<a href="http://yahoo.com" title="some title">yahoo</a>'''
-        out_md = '''[yahoo](http://yahoo.com "some title")'''
+        in_html = u'''<a href="http://yahoo.com" title="some title">yahoo</a>'''
+        out_md = u'''[yahoo](http://yahoo.com "some title")'''
         assertEq(out_md, html2md.html2md(in_html))
 
     def test_a_attributes(self):
@@ -55,12 +55,12 @@ class BasicTest(unittest.TestCase):
     def test_h2_simple(self):
         in_html = '''<h2>Very simple H2</h2>'''
         out_md = '''## Very simple H2'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
 
     def test_h2_with_link(self):
         in_html = '''<h2 id="h2_id">Very simple H2 with <a href="http://yahoo.com" id="link_id">link</a> to</h2>'''
         out_md = '''## Very simple H2 with [link](http://yahoo.com "{{#link_id}}") to [..]("{{h2:#h2_id}}")'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
 
     def test_img_attributes(self):
         in_html = '''<p>
@@ -70,7 +70,11 @@ class BasicTest(unittest.TestCase):
      height="351">
 </p>'''
         out_md = u'''![a picture](http://lh4.ggpht.com/_apBFwLItpPg/IBM%20The.jpg "{{width=468 height=351}}")'''  # nopep8
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html).strip('\n\r'))
+
+
+def suite():
+    return unittest.TestLoader().loadTestsFromTestCase(BasicTest)
 
 
 if __name__ == '__main__':

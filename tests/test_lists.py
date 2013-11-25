@@ -7,58 +7,25 @@ from assertions import assertEq
 __author__ = 'alex'
 
 
-class ListsTest(unittest.TestCase):
-    def test_basic(self):
-        in_html = '''<ul>
-<li>item 1</li>
-<li>item 2</li>
-<li>item 3</li>
-</ul>'''
-        out_md = '''*   item 1
-*   item 2
-*   item 3'''
-        assertEq(out_md, html2md.html2md(in_html))
-
-    def test_imbricated(self):
+class SpecialListsTest(unittest.TestCase):
+    def test_text_and_paragraph(self):
         in_html = '''<ul>
 <li>item 1</li>
 <li>item 2
-<ol>
-<li>sitem 2.1</li>
-<li>sitem 2.2</li>
-<li>sitem 2.3</li>
-</ol>
-</li>
-<li>item 3</li>
-</ul>'''
-        out_md = '''*   item 1
-*   item 2
-    1.  sitem 2.1
-    1.  sitem 2.2
-    1.  sitem 2.3
-*   item 3'''
-        assertEq(out_md, html2md.html2md(in_html))
-
-    def test_paragraph_items(self):
-        in_html = '''<ul>
-<li><p>item 1</p></li>
-<li>
-<p>item 2</p>
+<p>item 2 paragraph</p>
 <p>item 2 item 2</p>
-<p>item 2 item 2 item 2</p>
 </li>
 <li>item 3</li>
 </ul>'''
         out_md = '''*   item 1
-
 *   item 2
+
+    item 2 paragraph
 
     item 2 item 2
 
-    item 2 item 2 item 2
-
 *   item 3'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
 
     def test_paragraph_mixed(self):
         in_html = '''<ul>
@@ -78,7 +45,7 @@ class ListsTest(unittest.TestCase):
 
 *   item 4
 *   item 5'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
 
     def test_blockquote(self):
         in_html = '''
@@ -101,7 +68,7 @@ class ListsTest(unittest.TestCase):
     > item 2 paragraph 2
 
 *   item 3'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
 
     def test_blockquote_complex(self):
         in_html = '''<ul>
@@ -129,7 +96,7 @@ class ListsTest(unittest.TestCase):
 *   item 3
 
     > item 3 blockquote'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
 
     def test_cheatsheet(self):
         in_html = '''
@@ -168,7 +135,11 @@ project/
             test/
                 __init__.py
                 test_example1.py'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
+
+
+def suite():
+    return unittest.TestLoader().loadTestsFromTestCase(SpecialListsTest)
 
 
 if __name__ == '__main__':

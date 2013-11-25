@@ -39,13 +39,14 @@ def main(instream):
     </li>
     <li>last</li>
 </ul>'''
-        out_md = u'''*   first
+        out_md = u"""
+*   first
 *   second
 
     *   1.1
     *   1.2
 
-        > a blockquote on a second level list item
+        > a blockquote on second level list item
 
         > blockquote with p on second level list item
 
@@ -62,7 +63,7 @@ def main(instream):
                 return markup
 
     *   1.3
-*   last'''
+*   last"""
         assertEq(out_md, html2md.html2md(in_html))
 
 
@@ -92,7 +93,7 @@ class BlockquoteTest(unittest.TestCase):
 > > Back.on.2nd.level
 
 > Back.on.1st.level'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
 
     def test_twolevel_list(self):
         in_html = u'''
@@ -113,9 +114,8 @@ class BlockquoteTest(unittest.TestCase):
 
 > > *   first
 > > *   second
-> > *   third
-'''
-        assertEq(out_md, html2md.html2md(in_html))
+> > *   third'''
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
 
 
     def test_deep_pre(self):
@@ -141,6 +141,7 @@ def main(instream):
 > >         text = instream.read()
 > >         markup = html2md(text)
 > >         return markup
+
 > >
 > > a normal paragraph
 > >
@@ -177,6 +178,12 @@ class PreTest(unittest.TestCase):
 '''
         assertEq(out_md, html2md.html2md(in_html))
 
-        
+
+def suite():
+    return unittest.TestSuite([unittest.TestLoader().loadTestsFromTestCase(ListsTest),
+                               unittest.TestLoader().loadTestsFromTestCase(BlockquoteTest),
+                               unittest.TestLoader().loadTestsFromTestCase(PreTest)])
+
+
 if __name__ == '__main__':
     unittest.main()

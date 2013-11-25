@@ -11,12 +11,22 @@ from BeautifulSoup import Tag, NavigableString, Declaration, ProcessingInstructi
 __author__ = 'alex'
 
 
-def html2md(text):
+def html2md(text, strip=False):
     proc = Processor(text)
     return proc.get_output()
 
 _KNOWN_ELEMENTS = ('a', 'b', 'strong', 'blockquote', 'br', 'center', 'code', 'dl', 'dt', 'dd', 'div', 'em', 'i',
                    'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'img', 'li', 'ol', 'ul', 'p', 'pre', 'tt', 'sup')
+
+_PHRASING_ELEMENTS = ('abbr', 'audio', 'b', 'bdo', 'br', 'button', 'canvas', 'cite', 'code', 'command',
+                      'datalist', 'dfn', 'em', 'embed', 'i', 'iframe', 'img', 'input', 'kbd', 'keygen',
+                      'label', 'mark', 'math', 'meter', 'noscript', 'object', 'output', 'progress', 'q',
+                      'ruby', 'samp', 'script', 'select', 'small', 'span', 'strong', 'sub', 'sup', 'svg',
+                      'textarea', 'time', 'var', 'video', 'wbr')
+
+_CONDITIONAL_PHRASING_ELEMENTS = ('a', 'del', 'ins')
+
+_ALL_PHRASING_ELEMENTS = _CONDITIONAL_PHRASING_ELEMENTS + _PHRASING_ELEMENTS
 
 _IGNORE_ELEMENTS = ('html', 'body', 'article', 'aside', 'footer', 'header', 'main', 'section', 'span')
 _SKIP_ELEMENTS = ('head', 'nav', 'menu', 'menuitem')
@@ -42,22 +52,28 @@ class Processor(object):
             self._flush_buffer()
 
     def get_output(self):
-        return self._output.rstrip(u'\n\r')
+        return self._output.rstrip()
 
     def _process(self, element):
-        for t in element.contents:
-            # these are never of interest
-            if isinstance(t, (Declaration, ProcessingInstruction)):
-                continue
-            self._proc(t)
+        for idx, t in enumerate(element.contents):
+            if isinstance(t, Tag):
+                self._process_tag(t)
+            elif isinstance(t, NavigableString) and not self._is_empty(t):
+                txt = t.strip('\n\r')
+                if idx == 0 and not _is_inline(element):
+                    self._text_buffer.append(txt.lstrip(' \t'))
+                else:
+                    self._text_buffer.append(txt)
 
-    def _proc(self, t):
-        if isinstance(t, NavigableString):
-            if not self._is_empty(t):
-                self._text_buffer.append(t.strip('\r\n'))
-            return
+    def _proc(self, t, is_inline=False):
         if isinstance(t, Tag):
             self._process_tag(t)
+        elif isinstance(t, NavigableString) and not self._is_empty(t):
+            self._text_buffer.append(t.strip('\n\r'))
+            #if is_inline:
+            #    self._text_buffer.append(t.strip('\n\r'))
+            #else:
+            #    self._text_buffer.append(t.strip())
 
     def _process_tag(self, tag):
         # even if they contain information there's no way to convert it
@@ -70,7 +86,7 @@ class Processor(object):
             return
 
         if tag.name == 'a':
-            if 'href' in tag:
+            if tag.get('href'):
                 self._text_buffer.append(u'[')
                 self._process(tag)
                 self._text_buffer.append(u']')
@@ -79,9 +95,9 @@ class Processor(object):
                 attrs = dict(tag.attrs) if tag.attrs else {}
                 self.removeAttrs(attrs, 'href', 'title')
                 attrs_str = self.simpleAttrs(attrs)
-                if attrs_str or 'title' in tag:
+                if attrs_str or tag.get('title'):
                     self._text_buffer.append(u' "')
-                    if 'title' in tag:
+                    if tag.get('title'):
                         self._text_buffer.append(tag['title'])
                         if attrs_str:
                             self._text_buffer.append(u' ')
@@ -192,9 +208,9 @@ class Processor(object):
             attrs = dict(tag.attrs) if tag.attrs else {}
             self.removeAttrs(attrs, 'src', 'title', 'alt')
             attrs_str = self.simpleAttrs(attrs)
-            if attrs_str or 'title' in tag:
+            if attrs_str or tag.get('title'):
                 self._text_buffer.append(u' "')
-                if 'title' in tag:
+                if tag.get('title'):
                     self._text_buffer.append(tag['title'])
                     if attrs_str:
                         self._text_buffer.append(u' ')
@@ -210,39 +226,41 @@ class Processor(object):
             blocks_counter = 0
             self._push_attributes(tag=tag)
             if tag.string:
-                self._proc(tag.string)
-                self._write_block(sep=u'\n')
+                if not self._is_empty(tag.string):
+                    self._text_buffer.append(tag.string.strip())
+                self._write_block(sep=LF)
             else:
                 elements = []
                 for c in tag.contents:
-                    if isinstance(c, NavigableString) and not self._is_empty(c):
+                    if isinstance(c, Tag):
                         elements.append(c)
-                    elif isinstance(c, Tag):
+                    elif isinstance(c, NavigableString) and not self._is_empty(c):
                         elements.append(c)
-                    #        if len(elements) == 1:
-                    #          elem = elements[0]
-                    #          if isinstance(elem, NavigableString):
-                    #            self._proc(elements[0])
-                    #            self._write_block(sep=u'\n')
-                    #          else:
-                    #            if elem.name == 'p':
-                    #              self._write('\n')
-                    #            self._proc(elem)
-                    #        else:
+                prev_was_text = False
                 for c in elements:
-                    if isinstance(c, Tag) and c.name in ('blockquote', 'ol', 'p', 'pre', 'ul', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'):  # nopep8
-                        blocks_counter += 1
-                        list_item_has_block = True
-                        last_block_name = c.name
-                        self._write_block(sep=u'\n')
-                    self._proc(c)
+                    if isinstance(c, NavigableString):
+                        self._text_buffer.append(c.strip())
+                        prev_was_text = True
+                        continue
+                    if isinstance(c, Tag):
+                        if c.name in ('blockquote', 'dl', 'ol', 'p', 'pre', 'ul', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'):  # nopep8
+                            blocks_counter += 1
+                            list_item_has_block = True
+                            last_block_name = c.name
+                            if prev_was_text:
+                                prev_was_text = False
+                                self._write_block(sep=LF * 2)
+                            else:
+                                self._write_block(sep=LF)
+                        self._process_tag(c)
+
             if list_item_has_block:
                 trim_newlines = False
                 #        if last_block_name == 'p' and blocks_counter < 3:
                 #          trim_newlines = True
                 if last_block_name in ('ul', 'ol') and blocks_counter < 2:
                     trim_newlines = True
-                if trim_newlines and self._output[-2:] == '\n\n':
+                if trim_newlines and self._output[-2:] == LF * 2:
                     self._output = self._output[:-1]
             if self._indentation_stack[-1] in ('cul', 'col'):
                 self._indentation_stack[-1] = self._indentation_stack[-1][1:]
@@ -255,7 +273,7 @@ class Processor(object):
             self._process(tag)
             self._indentation_stack.pop()
             self._list_level -= 1
-            self._write('', sep=os.linesep)
+            self._write('', sep=LF)
             if self._list_level == 0:
                 self._write('', sep=LF)
             return
@@ -273,8 +291,11 @@ class Processor(object):
             self._push_attributes(tag=tag)
             self._inside_block = True
             self._indentation_stack.append('pre')
-            self._text_buffer.append(tag.getText())
-            self._write_block(sep=u'\n')
+            # FIXME
+            pre_text = unicode(tag)
+            pre_text = pre_text.replace('<pre>', '').replace('</pre>', '').replace('<code>', '').replace('</code>', '')
+            self._text_buffer.append(pre_text.strip(' \t\n\r'))
+            self._write_block(sep=LF*2)
             self._indentation_stack.pop()
             self._inside_block = False
             return
@@ -321,9 +342,11 @@ class Processor(object):
                 extra_indentation += (u' ' * 4)
                 self._indentation_stack[idx] = 'cul'
             elif indent_type == 'cul':
-                indentation = extra_indentation = (u' ' * 4)
+                indentation += (u' ' * 4)
+                extra_indentation += (u' ' * 4)
             elif indent_type == 'col':
-                indentation = extra_indentation = (u' ' * 4)
+                indentation += (u' ' * 4)
+                extra_indentation += (u' ' * 4)
 
         attributes = []
         for tagname, attrs in self._attributes_stack:
@@ -332,10 +355,12 @@ class Processor(object):
 
         txt = indentation
         txt += ''.join(self._text_buffer)
-        txt = txt.replace(u'\r\n', u'\n')
+        txt = txt.replace(u'\r\n', LF)
         if sep and txt.endswith('\n'):
             txt = txt.rstrip('\n')
-        txt = txt.replace(u'\n', u'\n' + extra_indentation)
+        #txt = txt.replace(u'\n', u'\n' + extra_indentation)
+        #txt = re.sub('\n\s+', '\n' + extra_indentation, txt, re.M)
+        txt = txt.replace(u'\n', LF + extra_indentation)
         if attributes:
             txt += u' ' + u' '.join(attributes)
         self._write(txt, sep)
@@ -440,7 +465,7 @@ class Processor(object):
             self._attributes_stack.append((tagname, attr_dict))
 
     def _process_footnotes(self, tag):
-        self._write('', sep=os.linesep * 2)
+        self._write('', sep=LF * 2)
         index = 0
         for li in tag.findAll('li'):
             buffer = []
@@ -478,7 +503,16 @@ class Processor(object):
             self._write(footnote, sep=os.linesep)
 
 
+def _is_inline(element):
+    if isinstance(element, (NavigableString, Declaration, ProcessingInstruction, Comment)):
+        return False
+    if isinstance(element, Tag) and \
+            (element.name in ('blockquote', 'center', 'dl', 'dt', 'dd', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'ol', 'ul', 'p', 'pre')):  # nopep8
+        return False
+    return True
+
 _FOOTNOTE_REF_re = re.compile('\[?[a-zA-Z0-9]\]?')
+
 
 
 def _entity2ascii(val):

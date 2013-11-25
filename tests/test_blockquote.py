@@ -11,12 +11,12 @@ class BlockquoteTest(unittest.TestCase):
     def test_no_paragraph(self):
         in_html = '''<blockquote>some text</blockquote>'''
         out_md = '''> some text'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
 
     def test_paragraph(self):
         in_html = '''<blockquote><p>some text</p></blockquote>'''
         out_md = '''> some text'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
 
     def test_multi_paragraph(self):
         in_html = '''<blockquote>
@@ -26,7 +26,7 @@ class BlockquoteTest(unittest.TestCase):
         out_md = '''> some paragraph
 
 > another paragraph'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
 
     def test_multi_line_prefix(self):
         in_html = '''<blockquote>
@@ -42,7 +42,7 @@ in total</p>
 > another paragraph that has
 > three lines
 > in total'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
 
     def test_pre(self):
         in_html = '''<blockquote>
@@ -57,7 +57,7 @@ in total</p>
 >       ...
 >       "created" : { "d" : "2010-03-29", "t" : "20:15:34" }
 >     }'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
 
     def test_list(self):
         in_html = '''<blockquote>
@@ -72,7 +72,7 @@ in total</p>
 > 1.  MongoDB assumes that you have more than one server
 > 1.  MongoDB assumes you want fast/unsafe, but lets you do slow/safe
 > 1.  MongoDB developers assume you'll complain if something goes wrong'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
 
     def test_complex(self):
         in_html = '''<blockquote>
@@ -90,8 +90,11 @@ in total</p>
 > > MongoDB assumes that you have more than one server
 
 > MongoDB assumes you want fast/unsafe, but lets you do slow/safe'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
 
+
+def suite():
+    return unittest.TestLoader().loadTestsFromTestCase(BlockquoteTest)
 
 if __name__ == '__main__':
     unittest.main()

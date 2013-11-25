@@ -19,7 +19,7 @@ class ListsTest(unittest.TestCase):
         out_md = '''*   item 1
 *   item 2
 *   item 3'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
 
     def test_imbricated(self):
         in_html = '''
@@ -36,11 +36,12 @@ class ListsTest(unittest.TestCase):
 '''
         out_md = '''*   item 1
 *   item 2
+
     *   item 2.1
     *   item 2.2
     *   item 2.3
 *   item 3'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
 
     def test_paragraph_items(self):
         in_html = '''
@@ -55,7 +56,7 @@ class ListsTest(unittest.TestCase):
 *   item 2
 
 *   item 3'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
 
     def test_twoparagraph_item(self):
         in_html = '''
@@ -73,7 +74,7 @@ class ListsTest(unittest.TestCase):
     item 2 continued
 
 *   item 3'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
 
     def test_multipara_plus_imbricated(self):
         in_html = '''
@@ -99,7 +100,7 @@ class ListsTest(unittest.TestCase):
     *   item 2.2
 
 *   item 3'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
 
     def test_complex(self):
         in_html = '''
@@ -125,7 +126,11 @@ class ListsTest(unittest.TestCase):
     *   item 2.2
 
 *   item 3'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, strip=True))
+
+
+def suite():
+    return unittest.TestLoader().loadTestsFromTestCase(ListsTest)
 
 
 if __name__ == '__main__':
