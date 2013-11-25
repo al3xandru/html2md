@@ -41,7 +41,7 @@ class UnprocessedElements(unittest.TestCase):
             in_html = u'''<p>A paragraph with an <{0}>inserted text</{0}> and existing text.</p>'''.format(tag)
             out_md = u'''A paragraph with an <{0}>inserted text</{0}> and existing text.'''.format(tag)
             try:
-                assertEq(out_md, html2md.html2md(in_html, strip=True))
+                assertEq(out_md, html2md.html2md(in_html))
             except AssertionError, aser:
                 results[tag] = aser
         if results:
@@ -58,7 +58,7 @@ class UnprocessedElements(unittest.TestCase):
             in_html = u'''<p>A paragraph with an <{0}>inserted text</{0}> and existing text.</p>'''.format(tag)
             out_md = u'''A paragraph with an  and existing text.'''.format(tag)
             try:
-                assertEq(out_md, html2md.html2md(in_html, strip=True))
+                assertEq(out_md, html2md.html2md(in_html))
             except AssertionError, aser:
                 results[tag] = aser
         if results:

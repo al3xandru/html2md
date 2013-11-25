@@ -12,7 +12,7 @@ used in 2 places.'''
         out_md = u'''This is a paragraph with  
 a forced line break  
 used in 2 places.'''
-        assertEq(out_md, html2md.html2md(in_html, strip=True))
+        assertEq(out_md, html2md.html2md(in_html))
 
 
     def test_hr(self):
@@ -24,7 +24,7 @@ used in 2 places.'''
 -----
 
 Follow up text.'''
-        assertEq(out_md, html2md.html2md(in_html, strip=True))
+        assertEq(out_md, html2md.html2md(in_html))
 
 
 def suite():

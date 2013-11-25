@@ -25,7 +25,7 @@ class SpecialListsTest(unittest.TestCase):
     item 2 item 2
 
 *   item 3'''
-        assertEq(out_md, html2md.html2md(in_html, strip=True))
+        assertEq(out_md, html2md.html2md(in_html))
 
     def test_paragraph_mixed(self):
         in_html = '''<ul>
@@ -45,7 +45,7 @@ class SpecialListsTest(unittest.TestCase):
 
 *   item 4
 *   item 5'''
-        assertEq(out_md, html2md.html2md(in_html, strip=True))
+        assertEq(out_md, html2md.html2md(in_html))
 
     def test_blockquote(self):
         in_html = '''
@@ -68,7 +68,7 @@ class SpecialListsTest(unittest.TestCase):
     > item 2 paragraph 2
 
 *   item 3'''
-        assertEq(out_md, html2md.html2md(in_html, strip=True))
+        assertEq(out_md, html2md.html2md(in_html))
 
     def test_blockquote_complex(self):
         in_html = '''<ul>
@@ -96,7 +96,7 @@ class SpecialListsTest(unittest.TestCase):
 *   item 3
 
     > item 3 blockquote'''
-        assertEq(out_md, html2md.html2md(in_html, strip=True))
+        assertEq(out_md, html2md.html2md(in_html))
 
     def test_cheatsheet(self):
         in_html = '''
@@ -135,7 +135,7 @@ project/
             test/
                 __init__.py
                 test_example1.py'''
-        assertEq(out_md, html2md.html2md(in_html, strip=True))
+        assertEq(out_md, html2md.html2md(in_html))
 
 
 def suite():

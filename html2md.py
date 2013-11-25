@@ -14,7 +14,7 @@ from BeautifulSoup import Tag, NavigableString, Declaration, ProcessingInstructi
 __author__ = 'alex'
 
 
-def html2md(text, strip=False):
+def html2md(text):
     proc = Processor(text)
     return proc.get_output()
 

@@ -50,5 +50,9 @@ Also DIVs even if they're wrong, they should still work.
         assertEq(out_md, html2md.html2md(in_html))
 
 
+def suite():
+    return unittest.TestLoader().loadTestsFromTestCase(FragTests)
+
+
 if __name__ == '__main__':
     unittest.main()

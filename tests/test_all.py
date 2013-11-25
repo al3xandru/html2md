@@ -9,6 +9,7 @@ import test_nestedelements
 import test_purelists
 import test_unknownelements
 import test_spacing
+import test_frag
 
 def suite():
     return unittest.TestSuite([
@@ -20,7 +21,8 @@ def suite():
         test_lists.suite(),
         test_unknownelements.suite(),
         test_nestedelements.suite(),
-        test_spacing.suite()])
+        test_spacing.suite(),
+        test_frag.suite()])
 
 
 if __name__ == '__main__':

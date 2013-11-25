@@ -93,7 +93,7 @@ class BlockquoteTest(unittest.TestCase):
 > > Back.on.2nd.level
 
 > Back.on.1st.level'''
-        assertEq(out_md, html2md.html2md(in_html, strip=True))
+        assertEq(out_md, html2md.html2md(in_html))
 
     def test_twolevel_list(self):
         in_html = u'''
@@ -115,7 +115,7 @@ class BlockquoteTest(unittest.TestCase):
 > > *   first
 > > *   second
 > > *   third'''
-        assertEq(out_md, html2md.html2md(in_html, strip=True))
+        assertEq(out_md, html2md.html2md(in_html))
 
 
     def test_deep_pre(self):
