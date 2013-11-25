@@ -13,3 +13,4 @@
 
     <http://pylint-messages.wikidot.com/all-messages>
 
+*   [ ] Is there a way to completely support footnotes?
