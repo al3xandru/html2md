@@ -14,8 +14,8 @@ from BeautifulSoup import Tag, NavigableString, Declaration, ProcessingInstructi
 __author__ = 'alex'
 
 
-def html2md(text):
-    proc = Processor(text)
+def html2md(text, attrs=True, footnotes=False):
+    proc = Processor(text, attrs=attrs, footnotes=footnotes)
     return proc.get_output()
 
 _KNOWN_ELEMENTS = ('a', 'b', 'strong', 'blockquote', 'br', 'center', 'code', 'dl', 'dt', 'dd', 'div', 'em', 'i',
@@ -37,9 +37,23 @@ LF = unicode(os.linesep)
 
 
 class Processor(object):
-    def __init__(self, html):
+    def __init__(self, html, **kwargs):
+        """
+        Supported options:
+
+        attrs:
+
+        footnotes:
+        """
         self.html = html
         self.soup = ICantBelieveItsBeautifulSoup(html)
+        self._processed = False
+        self._options = {
+            'attrs': True,
+            'footnotes': False,
+        }
+        self._options.update(kwargs)
+
         self._text_buffer = []  # maintains a buffer usually used for block elements
         self._attributes_stack = []
         self._indentation_stack = []  # maintains a stack of indentation types
@@ -49,12 +63,44 @@ class Processor(object):
         self._list_item_has_block = False
         self._output = u''
         self._footnote_ref = 0
+        self._elements = {
+            'a': self._tag_a,
+            'b': self._tag_strong,
+            'strong': self._tag_strong,
+            'blockquote': self._tag_blockquote,
+            'br': self._tag_br,
+            'code': self._tag_code,
+            'tt': self._tag_code,
+            'center': self._tag_center,
+            'div': self._tag_div,
+            'em': self._tag_em,
+            'i': self._tag_em,
+            'h1': self._tag_h,
+            'h2': self._tag_h,
+            'h3': self._tag_h,
+            'h4': self._tag_h,
+            'h5': self._tag_h,
+            'h6': self._tag_h,
+            'hr': self._tag_hr,
+            'img': self._tag_img,
+            'li': self._tag_li,
+            'ol': self._tag_list,
+            'ul': self._tag_list,
+            'p': self._tag_p,
+            'pre': self._tag_pre,
+        }
+        if self._options['footnotes']:
+            self._elements['sup'] = self._tag_sup
 
-        self._process(self.soup)
-        if self._text_buffer:
-            self._flush_buffer()
+
 
     def get_output(self):
+        if not self._processed:
+            self._process(self.soup)
+            if self._text_buffer:
+                self._flush_buffer()
+            self._processed = True
+
         return self._output.rstrip()
 
     def _process(self, element):
@@ -82,12 +128,14 @@ class Processor(object):
             self._process_tag(t)
         elif isinstance(t, NavigableString) and not self._is_empty(t):
             self._text_buffer.append(t.strip('\n\r'))
-            #if is_inline:
-            #    self._text_buffer.append(t.strip('\n\r'))
-            #else:
-            #    self._text_buffer.append(t.strip())
 
     def _process_tag(self, tag):
+        _tag_func = self._elements.get(tag.name)
+
+        if _tag_func:
+            _tag_func(tag)
+            return
+
         # even if they contain information there's no way to convert it
         if tag.name in _SKIP_ELEMENTS:
             return
@@ -97,62 +145,99 @@ class Processor(object):
             self._process(tag)
             return
 
-        if tag.name == 'a':
-            if tag.get('href'):
-                self._text_buffer.append(u'[')
-                self._process(tag)
-                self._text_buffer.append(u']')
-                self._text_buffer.append(u'(')
-                self._text_buffer.append(tag['href'])
-                attrs = dict(tag.attrs) if tag.attrs else {}
-                self.removeAttrs(attrs, 'href', 'title')
-                attrs_str = self.simpleAttrs(attrs)
-                if attrs_str or tag.get('title'):
-                    self._text_buffer.append(u' "')
-                    if tag.get('title'):
-                        self._text_buffer.append(tag['title'])
-                        if attrs_str:
-                            self._text_buffer.append(u' ')
+        if self._inside_block:
+            self._text_buffer.append(unicode(tag))
+        else:
+            self._write(unicode(tag), sep=LF * 2)
+
+    def _tag_a(self, tag):
+        if tag.get('href'):
+            self._text_buffer.append(u'[')
+            self._process(tag)
+            self._text_buffer.append(u']')
+            self._text_buffer.append(u'(')
+            self._text_buffer.append(tag['href'])
+            attrs = dict(tag.attrs) if tag.attrs else {}
+            self.removeAttrs(attrs, 'href', 'title')
+            attrs_str = self.simpleAttrs(attrs)
+            if attrs_str or tag.get('title'):
+                self._text_buffer.append(u' "')
+                if tag.get('title'):
+                    self._text_buffer.append(tag['title'])
                     if attrs_str:
-                        self._text_buffer.append(attrs_str)
-                    self._text_buffer.append(u'"')
-                self._text_buffer.append(u')')
-            else:
-                self._text_buffer.append(unicode(tag))
+                        self._text_buffer.append(u' ')
+                if attrs_str:
+                    self._text_buffer.append(attrs_str)
+                self._text_buffer.append(u'"')
+            self._text_buffer.append(u')')
+        else:
+            self._text_buffer.append(unicode(tag))
 
-            return
+    def _tag_strong(self, tag):
+        """Process <B> and <STRONG>
+        """
+        self._text_buffer.append(u"**")
+        self._process(tag)
+        self._text_buffer.append(u"**")
 
-        if tag.name in ('b', 'strong'):
-            self._text_buffer.append(u"**")
-            self._process(tag)
-            self._text_buffer.append(u"**")
-            return
+    def _tag_em(self, tag):
+        """Process <EM> and <I>
+        """
+        self._text_buffer.append(u"*")
+        self._process(tag)
+        self._text_buffer.append(u"*")
 
-        if tag.name == 'blockquote':
-            self._push_attributes(tag=tag)
-            self._inside_block = True
-            self._indentation_stack.append('bq')
-            self._process(tag)
-            self._write_block(sep=LF * 2)
-            self._indentation_stack.pop()
-            self._inside_block = False
-            return
+    def _tag_blockquote(self, tag):
+        """Process a <BLOCKQUOTE>
+        """
+        self._push_attributes(tag=tag)
+        self._inside_block = True
+        self._indentation_stack.append('bq')
+        self._process(tag)
+        self._write_block(sep=LF * 2)
+        self._indentation_stack.pop()
+        self._inside_block = False
 
-        if tag.name == 'br':
-            self._text_buffer.append(u"  " + LF)
-            return
+    def _tag_br(self, tag):
+        """ Process <BR>
+        """
+        self._text_buffer.append(u"  " + LF)
 
-        if tag.name == 'center':
+    def _tag_code(self, tag):
+        """Process <CODE> and <TT>
+        """
+        self._text_buffer.append(u"`")
+        self._text_buffer.append(tag.getText())
+        self._text_buffer.append(u"`")
+
+    def _tag_center(self, tag):
+        """Process <CENTER>
+        """
+        if self._options['attrs']:
             self._push_attributes(tagname='p', attrs={'style': 'text-align:center;'})
-            self._process(tag)
-            self._write_block(sep=LF * 2)
+        self._process(tag)
+        self._write_block(sep=LF * 2)
+
+    def _tag_div(self, tag):
+        """Process <DIV>
+        """
+        div_class = tag.get('class')
+        if div_class and div_class.find('footnote') > -1:
+            self._inside_footnote = True
+            self._flush_buffer()
+            self._process_footnotes(tag)
+            self._inside_footnote = False
             return
 
-        if tag.name == 'code':
-            self._text_buffer.append(u"`")
-            self._text_buffer.append(tag.getText())
-            self._text_buffer.append(u"`")
-            return
+        if self._known_div(tag):
+            self._inside_block = True
+            self._process(tag)
+            self._write_block(sep=LF * 2)
+            self._inside_block = False
+        else:
+            self._write(unicode(tag), sep=LF * 2)
+
+    def _tag_dl(self, tag):
 
         if tag.name == 'dl':
             # FIXME
@@ -168,172 +253,133 @@ class Processor(object):
             self._write_block(sep=LF * 2)
             return
 
-        # Add support for Critical markup
-        #if tag.name == 'del':
-        #    self._text_buffer.append(u"~~")
-        #    self._process(tag)
-        #    self._text_buffer.append(u"~~")
-        #    return
+    def _tag_h(self, tag):
+        self._push_attributes(tag=tag)
+        self._inside_block = True
+        self._text_buffer.append(u'#' * int(tag.name[1]) + ' ')
+        self._process(tag)
+        self._write_block(sep=LF * 2)
+        self._inside_block = False
+        self._text_buffer = []
 
-        if tag.name == 'div':
-            div_class = tag.get('class')
-            if div_class and div_class.find('footnote') > -1:
-                self._inside_footnote = True
-                self._flush_buffer()
-                self._process_footnotes(tag)
-                self._inside_footnote = False
-                return
+    def _tag_hr(self, tag):
+        if not self._inside_footnote:
+            self._write(LF + u'-----', sep=LF * 2)
 
-            if self._known_div(tag):
-                self._inside_block = True
-                self._process(tag)
-                self._write_block(sep=LF * 2)
-                self._inside_block = False
-            else:
-                self._write(unicode(tag), sep=LF * 2)
-            return
-
-        if tag.name in ('em', 'i'):
-            self._text_buffer.append(u"*")
-            self._process(tag)
-            self._text_buffer.append(u"*")
-            return
-
-        if tag.name in ('h1', 'h2', 'h3', 'h4', 'h5', 'h6'):
-            self._push_attributes(tag=tag)
-            self._inside_block = True
-            self._text_buffer.append(u'#' * int(tag.name[1]) + ' ')
-            self._process(tag)
-            self._write_block(sep=LF * 2)
-            self._inside_block = False
-            self._text_buffer = []
-            return
-
-        if tag.name == 'hr':
-            if not self._inside_footnote:
-                self._write(LF + u'-----', sep=LF * 2)
-            return
-
-        if tag.name == 'img':
-            self._text_buffer.append(u'![')
-            self._text_buffer.append(tag.get('alt') or tag.get('title') or '')
-            self._text_buffer.append(u']')
-            self._text_buffer.append(u'(')
-            self._text_buffer.append(tag['src'])
-            attrs = dict(tag.attrs) if tag.attrs else {}
-            self.removeAttrs(attrs, 'src', 'title', 'alt')
-            attrs_str = self.simpleAttrs(attrs)
-            if attrs_str or tag.get('title'):
-                self._text_buffer.append(u' "')
-                if tag.get('title'):
-                    self._text_buffer.append(tag['title'])
-                    if attrs_str:
-                        self._text_buffer.append(u' ')
+    def _tag_img(self, tag):
+        self._text_buffer.append(u'![')
+        self._text_buffer.append(tag.get('alt') or tag.get('title') or '')
+        self._text_buffer.append(u']')
+        self._text_buffer.append(u'(')
+        self._text_buffer.append(tag['src'])
+        attrs = dict(tag.attrs) if tag.attrs else {}
+        self.removeAttrs(attrs, 'src', 'title', 'alt')
+        attrs_str = self.simpleAttrs(attrs)
+        if attrs_str or tag.get('title'):
+            self._text_buffer.append(u' "')
+            if tag.get('title'):
+                self._text_buffer.append(tag['title'])
                 if attrs_str:
-                    self._text_buffer.append(attrs_str)
-                self._text_buffer.append(u'"')
-            self._text_buffer.append(u')')
-            return
+                    self._text_buffer.append(u' ')
+            if attrs_str:
+                self._text_buffer.append(attrs_str)
+            self._text_buffer.append(u'"')
+        self._text_buffer.append(u')')
 
-        if tag.name == 'li':
-            list_item_has_block = False
-            last_block_name = None
-            blocks_counter = 0
-            self._push_attributes(tag=tag)
-            if tag.string:
-                if not self._is_empty(tag.string):
-                    self._text_buffer.append(tag.string.strip())
-                self._write_block(sep=LF)
-            else:
-                elements = []
-                for c in tag.contents:
-                    if isinstance(c, Tag):
-                        elements.append(c)
-                    elif isinstance(c, NavigableString) and not self._is_empty(c):
-                        elements.append(c)
-                prev_was_text = False
-                for c in elements:
-                    if isinstance(c, NavigableString):
-                        self._text_buffer.append(c.strip())
-                        prev_was_text = True
-                        continue
-                    if isinstance(c, Tag):
-                        if c.name in ('blockquote', 'dl', 'ol', 'p', 'pre', 'ul', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'):  # nopep8
-                            blocks_counter += 1
-                            list_item_has_block = True
-                            last_block_name = c.name
-                            if prev_was_text:
-                                prev_was_text = False
-                                self._write_block(sep=LF * 2)
-                            else:
-                                self._write_block(sep=LF)
-                        self._process_tag(c)
-
-            if list_item_has_block:
-                trim_newlines = False
-                #        if last_block_name == 'p' and blocks_counter < 3:
-                #          trim_newlines = True
-                if last_block_name in ('ul', 'ol') and blocks_counter < 2:
-                    trim_newlines = True
-                if trim_newlines and self._output[-2:] == LF * 2:
-                    self._output = self._output[:-1]
-            if self._indentation_stack[-1] in ('cul', 'col'):
-                self._indentation_stack[-1] = self._indentation_stack[-1][1:]
-            return
-
-        if tag.name in ('ol', 'ul'):
-            self._list_level += 1
-            self._push_attributes(tag=tag)
-            self._indentation_stack.append(tag.name)
-            self._process(tag)
-            self._indentation_stack.pop()
-            self._list_level -= 1
-            self._write('', sep=LF)
-            if self._list_level == 0:
-                self._write('', sep=LF)
-            return
-
-        if tag.name == 'p':
-            # must finish it by 2 * os.linesep
-            self._push_attributes(tag=tag)
-            self._inside_block = True
-            self._process(tag)
-            self._write_block(sep=LF * 2)
-            self._inside_block = False
-            return
-
-        if tag.name == 'pre':
-            self._push_attributes(tag=tag)
-            self._inside_block = True
-            self._indentation_stack.append('pre')
-            # FIXME
-            pre_text = unicode(tag)
-            pre_text = pre_text.replace('<pre>', '').replace('</pre>', '').replace('<code>', '').replace('</code>', '')
-            self._text_buffer.append(pre_text.strip(' \t\n\r'))
-            self._write_block(sep=LF*2)
-            self._indentation_stack.pop()
-            self._inside_block = False
-            return
-
-        if tag.name == 'sup':
-            sup_txt = tag.getText()
-            if _FOOTNOTE_REF_re.match(sup_txt):
-                self._footnote_ref += 1
-                self._text_buffer.append(u'[^%s]' % self._footnote_ref)
-            else:
-                self._write(unicode(tag))
-            return
-
-        if tag.name == 'tt':
-            self._text_buffer.append(u"`")
-            self._text_buffer.append(tag.getText())
-            self._text_buffer.append(u"`")
-            return
-
-        if self._inside_block:
-            self._text_buffer.append(unicode(tag))
+    def _tag_li(self, tag):
+        list_item_has_block = False
+        last_block_name = None
+        blocks_counter = 0
+        self._push_attributes(tag=tag)
+        if tag.string:
+            if not self._is_empty(tag.string):
+                self._text_buffer.append(tag.string.strip())
+            self._write_block(sep=LF)
         else:
-            self._write(unicode(tag), sep=LF * 2)
+            elements = []
+            for c in tag.contents:
+                if isinstance(c, Tag):
+                    elements.append(c)
+                elif isinstance(c, NavigableString) and not self._is_empty(c):
+                    elements.append(c)
+            prev_was_text = False
+            for c in elements:
+                if isinstance(c, NavigableString):
+                    self._text_buffer.append(c.strip())
+                    prev_was_text = True
+                    continue
+                if isinstance(c, Tag):
+                    if c.name in ('blockquote', 'dl', 'ol', 'p', 'pre', 'ul', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'):  # nopep8
+                        blocks_counter += 1
+                        list_item_has_block = True
+                        last_block_name = c.name
+                        if prev_was_text:
+                            prev_was_text = False
+                            self._write_block(sep=LF * 2)
+                        else:
+                            self._write_block(sep=LF)
+                    self._process_tag(c)
+
+        if list_item_has_block:
+            trim_newlines = False
+            #        if last_block_name == 'p' and blocks_counter < 3:
+            #          trim_newlines = True
+            if last_block_name in ('ul', 'ol') and blocks_counter < 2:
+                trim_newlines = True
+            if trim_newlines and self._output[-2:] == LF * 2:
+                self._output = self._output[:-1]
+        if self._indentation_stack[-1] in ('cul', 'col'):
+            self._indentation_stack[-1] = self._indentation_stack[-1][1:]
+
+    def _tag_list(self, tag):
+        self._list_level += 1
+        self._push_attributes(tag=tag)
+        self._indentation_stack.append(tag.name)
+        self._process(tag)
+        self._indentation_stack.pop()
+        self._list_level -= 1
+        self._write('', sep=LF)
+        if self._list_level == 0:
+            self._write('', sep=LF)
+
+    def _tag_p(self, tag):
+        # must finish it by 2 * os.linesep
+        self._push_attributes(tag=tag)
+        self._inside_block = True
+        self._process(tag)
+        self._write_block(sep=LF * 2)
+        self._inside_block = False
+
+    def _tag_pre(self, tag):
+        self._push_attributes(tag=tag)
+        self._inside_block = True
+        self._indentation_stack.append('pre')
+        # FIXME
+        pre_text = unicode(tag)
+        pre_text = pre_text.replace('<pre>', '').replace('</pre>', '').replace('<code>', '').replace('</code>', '')
+        self._text_buffer.append(pre_text.strip(' \t\n\r'))
+        self._write_block(sep=LF*2)
+        self._indentation_stack.pop()
+        self._inside_block = False
+
+    def _tag_sup(self, tag):
+        sup_txt = tag.getText()
+        if _FOOTNOTE_REF_re.match(sup_txt):
+            self._footnote_ref += 1
+            self._text_buffer.append(u'[^%s]' % self._footnote_ref)
+        else:
+            self._write(unicode(tag))
+
+
+    # CriticMarkup support
+    def _tag_ins(self, tag):
+        pass
+
+    def _tag_del(self, tag):
+        self._text_buffer.append(u"~~")
+        self._process(tag)
+        self._text_buffer.append(u"~~")
+
 
     def _write_block(self, sep=u''):
         if not self._attributes_stack and not self._text_buffer:
@@ -364,8 +410,9 @@ class Processor(object):
                 extra_indentation += (u' ' * 4)
 
         attributes = []
-        for tagname, attrs in self._attributes_stack:
-            attributes.append(self.elemAttrs(tagname, attrs, '..'))
+        if self._options['attrs']:
+            for tagname, attrs in self._attributes_stack:
+                attributes.append(self.elemAttrs(tagname, attrs, '..'))
         self._attributes_stack = []
 
         txt = indentation
