@@ -222,7 +222,7 @@ class Processor(object):
         """Process <DIV>
         """
         div_class = tag.get('class')
-        if div_class and div_class.find('footnote') > -1:
+        if self._options['footnotes'] and div_class and div_class.find('footnote') > -1:
             self._inside_footnote = True
             self._flush_buffer()
             self._process_footnotes(tag)
@@ -363,13 +363,15 @@ class Processor(object):
         self._inside_block = False
 
     def _tag_sup(self, tag):
-        sup_txt = tag.getText()
-        if _FOOTNOTE_REF_re.match(sup_txt):
+        _id = tag.get('id')
+        if not _id:
+            self._write(unicode(tag))
+            return
+        if _FOOTNOTE_REF_re.match(_id):
             self._footnote_ref += 1
             self._text_buffer.append(u'[^%s]' % self._footnote_ref)
         else:
             self._write(unicode(tag))
-
 
     # CriticMarkup support
     def _tag_ins(self, tag):
@@ -573,7 +575,7 @@ def _is_inline(element):
         return False
     return True
 
-_FOOTNOTE_REF_re = re.compile('\[?[a-zA-Z0-9]\]?')
+_FOOTNOTE_REF_re = re.compile('fnr(ef)*')
 
 
 
@@ -595,7 +597,7 @@ _ENTITY_DICT = {
 
 
 def main(instream):
-    markup = html2md(instream.read())
+    markup = html2md(instream.read(), attrs=False)
 
     return markup
     #parser = argparse.ArgumentParser(description='Transform HTML file to Markdown')

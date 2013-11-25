@@ -3,6 +3,7 @@
 *   [X] New lines and start spacing is broken
 *   [X] Fix complete HTML test (add embeds first)
 *   [X] Add option to disable attributes
+*   [X] Footnote processing
 *   [ ] Add option to enable GitHub fenced code snippets
 *   [ ] Add option to enable PHP-markdown fended code snippets
 *   [ ] Add option for Critical Markdown
