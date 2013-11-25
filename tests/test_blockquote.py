@@ -61,12 +61,14 @@ in total</p>
 
     def test_list(self):
         in_html = '''<blockquote>
-<ol><li>MongoDB assumes that you have a 64-bit machine</li>
-<li>MongoDB assumes that you're using a little-endian system</li>
-<li>MongoDB assumes that you have more than one server</li>
-<li>MongoDB assumes you want fast/unsafe, but lets you do slow/safe</li>
-<li>MongoDB developers assume you'll complain if something goes wrong</li>
-</ol></blockquote>'''
+<ol>
+    <li>MongoDB assumes that you have a 64-bit machine</li>
+    <li>MongoDB assumes that you're using a little-endian system</li>
+    <li>MongoDB assumes that you have more than one server</li>
+    <li>MongoDB assumes you want fast/unsafe, but lets you do slow/safe</li>
+    <li>MongoDB developers assume you'll complain if something goes wrong</li>
+</ol>
+</blockquote>'''
         out_md = '''> 1.  MongoDB assumes that you have a 64-bit machine
 > 1.  MongoDB assumes that you're using a little-endian system
 > 1.  MongoDB assumes that you have more than one server
@@ -76,12 +78,13 @@ in total</p>
 
     def test_complex(self):
         in_html = '''<blockquote>
-<p>MongoDB assumes that you have a 64-bit machine</p>
-<blockquote>
-<p>MongoDB assumes that you're using a little-endian system</p>
-<p>MongoDB assumes that you have more than one server</p>
-</blockquote>
-<p>MongoDB assumes you want fast/unsafe, but lets you do slow/safe</p>
+    <p>MongoDB assumes that you have a 64-bit machine</p>
+    <blockquote>
+        <p>MongoDB assumes that you're using a little-endian system</p>
+        <p>MongoDB assumes that you have more than one server</p>
+    </blockquote>
+
+    <p>MongoDB assumes you want fast/unsafe, but lets you do slow/safe</p>
 </blockquote>'''
         out_md = '''> MongoDB assumes that you have a 64-bit machine
 

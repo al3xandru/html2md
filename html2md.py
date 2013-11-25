@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
-import re
+
+import argparse
 import os
+import re
 import sys
+import textwrap
 
 from BeautifulSoup import ICantBelieveItsBeautifulSoup
 from BeautifulSoup import Tag, NavigableString, Declaration, ProcessingInstruction, Comment
@@ -55,6 +58,22 @@ class Processor(object):
         return self._output.rstrip()
 
     def _process(self, element):
+        if element.string and not self._is_empty(element.string):
+            txt = element.string
+            if not _is_inline(element):
+                #print ">>>><<<<<"
+                #print "IN   :%r" % txt
+                txt = txt.lstrip()
+                #print "Strip:%r" % txt
+                txt = re.sub('\n+', '\n', txt, re.M)
+                #print "NL   :%r" % txt
+                txt = re.sub(' +', ' ', txt)
+                #print "SP   :%r" % txt
+                txt = re.sub('\n ', '\n', txt)
+                #print "Final:%r" % txt
+                #print "-----------"
+            self._text_buffer.append(txt)
+            return
         for idx, t in enumerate(element.contents):
             if isinstance(t, Tag):
                 self._process_tag(t)
@@ -174,6 +193,7 @@ class Processor(object):
 
             if self._known_div(tag):
                 self._process(tag)
+                #self._write(u'', sep=LF)
             else:
                 self._write(unicode(tag), sep=LF * 2)
             return
@@ -356,19 +376,19 @@ class Processor(object):
         txt = indentation
         txt += ''.join(self._text_buffer)
         txt = txt.replace(u'\r\n', LF)
-        if sep and txt.endswith('\n'):
-            txt = txt.rstrip('\n')
-        #txt = txt.replace(u'\n', u'\n' + extra_indentation)
-        #txt = re.sub('\n\s+', '\n' + extra_indentation, txt, re.M)
-        txt = txt.replace(u'\n', LF + extra_indentation)
+        if sep and txt.endswith(LF):
+            txt = txt.rstrip(LF)
+        # SHOULD I: textwrap.wrap()
         if attributes:
             txt += u' ' + u' '.join(attributes)
+        txt = txt.replace(u'\n', LF + extra_indentation)
+
         self._write(txt, sep)
         self._text_buffer = []
 
     def _write(self, value, sep=u''):
-        if value and value[0] == '\n' and self._output and self._output[-1] == '\n':
-            value = value[1:]
+        if value and value[0] == LF and self._output and self._output[-1] == LF:
+            value = value[len(LF):]
         self._output += _entity2ascii(value) + sep
 
     def simpleAttrs(self, attrs):
@@ -507,7 +527,7 @@ def _is_inline(element):
     if isinstance(element, (NavigableString, Declaration, ProcessingInstruction, Comment)):
         return False
     if isinstance(element, Tag) and \
-            (element.name in ('blockquote', 'center', 'dl', 'dt', 'dd', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'ol', 'ul', 'p', 'pre')):  # nopep8
+            (element.name in ('blockquote', 'center', 'dl', 'dt', 'dd', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'ol', 'ul', 'p')):  # nopep8
         return False
     return True
 
@@ -533,9 +553,13 @@ _ENTITY_DICT = {
 
 
 def main(instream):
-    text = instream.read()
-    markup = html2md(text)
+    markup = html2md(instream.read())
+
     return markup
+    #parser = argparse.ArgumentParser(description='Transform HTML file to Markdown')
+    #parser.add_argument('input', type=argparse.FileType('r'), default=sys.stdin, help='Input file or stream')
+    #options = parser.parse_args(sys.argv)
+    #text = options.input.read()
 
 
 if __name__ == '__main__':

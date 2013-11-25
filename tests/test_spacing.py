@@ -25,7 +25,9 @@ class SpaceTests(unittest.TestCase):
     <img src="http://yahoo.com" alt="alt text" width="500" height="200" />
 </div>'''
         out_md = u'''
-And an image directly inside a div: ![alt text](http://yahoo.com "{{width=500 height=200}}")'''.lstrip()
+And an image directly inside a div:
+
+    ![alt text](http://yahoo.com "{{width=500 height=200}}")'''.lstrip()
         assertEq(out_md, html2md.html2md(in_html))
 
 
