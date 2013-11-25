@@ -13,18 +13,19 @@ UNPROCESSED_HTML_ELEMENTS = ('abbr', 'area', 'audio', 'aside'
                              'iframe', 'input', 'ins',
                              'kbd', 'keygen',
                              'label', 'legend',
-                             'map', 'mark', 'menu', 'menuitem', 'meter',
+                             'map', 'mark', 'meter',
                              'noscript',
                              'object', 'optgroup', 'option', 'output',
                              'param', 'progress',
                              'q',
                              'rp', 'rt', 'ruby',
-                             's', 'samp', 'script', 'select', 'shadow', 'small', 'span', 'style', 'sub', 'sup',
+                             's', 'samp', 'script', 'select', 'shadow', 'small', 'style', 'sub', 'sup',
                              'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'tr', 'track',
                              'var', 'video',
                              'wbr'
-
 )
+REMOVED_HTML_ELEMENTS = ('nav', 'menu', 'menuitem')
+
 NON_STANDARD_ELEMENTS = (
     'acronym', 'applet', 'bgsound', 'big', 'blink', 'center', 'dir', 'font', 'frame', 'frameset',
     'hgroup', 'isindex', 'listing', 'marquee', 'nobr', 'noframes', 'plaintext', 'spacer', 'strike', 'tt',
@@ -34,7 +35,7 @@ NON_STANDARD_ELEMENTS = (
 
 class UnprocessedElements(unittest.TestCase):
     def test_unprocessed(self):
-        """Cureently failing: col, del, sup"""
+        """Cureently failing: col, input, sup"""
         results = {}
         for tag in UNPROCESSED_HTML_ELEMENTS:
             in_html = u'''<p>A paragraph with an <{0}>inserted text</{0}> and existing text.</p>'''.format(tag)
@@ -44,8 +45,28 @@ class UnprocessedElements(unittest.TestCase):
             except AssertionError, aser:
                 results[tag] = aser
         if results:
-            self.fail("Following elements failed: %s" % results.keys())
+            print
+            for k, v in results.iteritems():
+                print "Failed tag: ", k, v
+                print
+            self.fail("%s tags failed (%s)" % (len(results), results.keys()))
 
+    def test_removed(self):
+        """Currently failing only due to spacing issues"""
+        results = {}
+        for tag in REMOVED_HTML_ELEMENTS:
+            in_html = u'''<p>A paragraph with an <{0}>inserted text</{0}> and existing text.</p>'''.format(tag)
+            out_md = u'''A paragraph with an and existing text.'''.format(tag)
+            try:
+                assertEq(out_md, html2md.html2md(in_html))
+            except AssertionError, aser:
+                results[tag] = aser
+        if results:
+            print
+            for k, v in results.iteritems():
+                print "Failed tag: ", k, v
+                print
+            self.fail("%s tags failed (%s)" % (len(results), results.keys()))
 
 class BlockElementsTest(unittest.TestCase):
     def test_iframe(self):

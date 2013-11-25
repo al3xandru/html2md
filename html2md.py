@@ -19,7 +19,7 @@ _KNOWN_ELEMENTS = ('a', 'b', 'strong', 'blockquote', 'br', 'center', 'code', 'dl
                    'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'img', 'li', 'ol', 'ul', 'p', 'pre', 'tt', 'sup')
 
 _IGNORE_ELEMENTS = ('html', 'body', 'article', 'aside', 'footer', 'header', 'main', 'section', 'span')
-_SKIP_ELEMENTS = ('head', 'nav', 'menu')
+_SKIP_ELEMENTS = ('head', 'nav', 'menu', 'menuitem')
 LF = unicode(os.linesep)
 
 
