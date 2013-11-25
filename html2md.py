@@ -61,17 +61,10 @@ class Processor(object):
         if element.string and not self._is_empty(element.string):
             txt = element.string
             if not _is_inline(element):
-                #print ">>>><<<<<"
-                #print "IN   :%r" % txt
                 txt = txt.lstrip()
-                #print "Strip:%r" % txt
                 txt = re.sub('\n+', '\n', txt, re.M)
-                #print "NL   :%r" % txt
                 txt = re.sub(' +', ' ', txt)
-                #print "SP   :%r" % txt
                 txt = re.sub('\n ', '\n', txt)
-                #print "Final:%r" % txt
-                #print "-----------"
             self._text_buffer.append(txt)
             return
         for idx, t in enumerate(element.contents):
@@ -192,8 +185,10 @@ class Processor(object):
                 return
 
             if self._known_div(tag):
+                self._inside_block = True
                 self._process(tag)
-                #self._write(u'', sep=LF)
+                self._write_block(sep=LF * 2)
+                self._inside_block = False
             else:
                 self._write(unicode(tag), sep=LF * 2)
             return

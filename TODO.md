@@ -1,7 +1,7 @@
 *   [X] Fix list tests
 *   [X] Add more tests for multi-level HTML element structures (blockquote, list, pre)
 *   [X] New lines and start spacing is broken
-*   [ ] Fix complete HTML test (add embeds first)
+*   [X] Fix complete HTML test (add embeds first)
 *   [ ] Add option to disable attributes
 *   [ ] Add option to enable GitHub fenced code snippets
 *   [ ] Add option to enable PHP-markdown fended code snippets
