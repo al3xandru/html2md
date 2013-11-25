@@ -457,5 +457,5 @@ if __name__ == '__main__':
   else:
     result = main(sys.stdin)
 
-  print result
+  print result.encode('utf8')
 
