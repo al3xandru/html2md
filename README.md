@@ -7,55 +7,47 @@ and is adding support for missing HTML elements that are common in rich HTML pag
 
 ## Usage
 
-`html2md.py [(filename|url) [encoding]]`
+```bash
+html2md.py [-h] [-a] [-f] [--fenced_code {github,php}] [-e ENCODING]
+                  [infile]
 
-    Options:
-      --version             show program's version number and exit
-      -h, --help            show this help message and exit
-      --ignore-links        don't include any formatting for links
-      --ignore-images       don't include any formatting for images
-      -g, --google-doc      convert an html-exported Google Document
-      -d, --dash-unordered-list
-                            use a dash rather than a star for unordered list items
-      -b BODY_WIDTH, --body-width=BODY_WIDTH
-                            number of characters per output line, 0 for no wrap
-      -i LIST_INDENT, --google-list-indent=LIST_INDENT
-                            number of pixels Google indents nested lists
-      -s, --hide-strikethrough
-                            hide strike-through text. only relevent when -g is
-                            specified as well
+Transform HTML file to Markdown
+
+positional arguments:
+  infile
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -a, --attrs           Enable element attributes in the output (custom
+                        Markdown extension)
+  -f, --footnotes       Enabled footnote processing (custom Markdown
+                        extension)
+  --fenced_code {github,php}, --fencedcode {github,php}, --fenced {github,php}
+                        Enabled fenced code output
+  -e ENCODING, --encoding ENCODING
+                        Provide an encoding for reading the input
+```
 
 Or you can use it from within Python:
 
-    import html2text
-    print html2text.html2text("<p>Hello, world.</p>")
+```python
+import html2md
+print html2text.html2md("<p>Hello, world.</p>")
+```
 
-Or with some configuration options:
+You can pass in different options
 
-    import html2text
-    h = html2text.HTML2Text()
-    h.ignore_links = True
-    print h.handle("<p>Hello, <a href='http://earth.google.com/'>world</a>!")
+*   `footnotes`: `True|False` (default `False`) convert footnotes
+*   `fenced_code`: `default|github|php` (default: `default`) convert code snippets into fenced code
+*   `attrs`: convert HTML attributes. <em>This is a custom extension and should not be used.</em>
 
-
-## Extra features
-
-## How to do a release
-
-1. Update the version in `html2text.py`
-2. Update the version in `setup.py`
-3. Run `python setup.py sdist upload`
-
-## How to run unit tests
-
-    python test/test_html2text.py -v
 
 
 ## License
 
-Short version: ...
+Short version: **OK** for open source projects. **OK** for commercial projects with my [signed agreement](mailto:html2md@mypopescu.com) **only**.
 
-Long version: see the [License](LICENSE.md) in the project.
+Long version: see the [License](LICENSE.md) file in the project.
 
 [markdown]: http://daringfireball.net/projects/markdown/
 [html2text]: http://www.aaronsw.com/2002/html2text/

@@ -5,6 +5,11 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
+The project, tool, or any work using it is open source with no commercial distribution.
+
+In case of a commercial project, tool, or any work using it, you have obtained
+a signed agreement from Alex Popescu.
+
 Redistributions of source code must retain the above copyright notice,
 this list of conditions and the following disclaimer.
 
