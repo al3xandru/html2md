@@ -11,5 +11,5 @@
 *   [X] Add option to enable PHP-markdown fended code snippets
 *   [ ] Definition lists
 *   [ ] License (BSD?)
-*   [ ] (opt) Add option for Critical Markdown
+*   [X] (opt) Add option for Critical Markdown
 *   [ ] (opt) Add correct item numbers for ordered lists

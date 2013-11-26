@@ -14,9 +14,9 @@ from BeautifulSoup import Tag, NavigableString, Declaration, ProcessingInstructi
 __author__ = 'alex'
 
 
-def html2md(text, attrs=False, footnotes=False, fenced_code='default'):
+def html2md(text, attrs=False, footnotes=False, fenced_code='default', critic_markup=False):
     """Simple API"""
-    proc = Processor(text, attrs=attrs, footnotes=footnotes, fenced_code=fenced_code)
+    proc = Processor(text, attrs=attrs, footnotes=footnotes, fenced_code=fenced_code, critic_markup=critic_markup)
     return proc.get_output()
 
 convert = html2md
@@ -54,7 +54,8 @@ class Processor(object):
         self._options = {
             'attrs': True,
             'footnotes': False,
-            'fenced_code': 'default'
+            'fenced_code': 'default',
+            'critic_markup': False
         }
         self._options.update(kwargs)
 
@@ -67,6 +68,9 @@ class Processor(object):
         self._list_item_has_block = False
         self._output = u''
         self._footnote_ref = 0
+        self._set_processors()
+
+    def _set_processors(self):
         self._elements = {
             'a': self._tag_a,
             'b': self._tag_strong,
@@ -95,7 +99,10 @@ class Processor(object):
         }
         if self._options['footnotes']:
             self._elements['sup'] = self._tag_sup
-
+        if self._options['critic_markup']:
+            self._elements['ins'] = self._tag_ins
+            self._elements['del'] = self._tag_del
+            self._elements['u'] = self._tag_u
 
 
     def get_output(self):
@@ -108,6 +115,9 @@ class Processor(object):
         return self._output.rstrip()
 
     def _process(self, element):
+        if isinstance(element, Comment):
+            self._comment(element)
+            return
         if element.string and not self._is_empty(element.string):
             txt = element.string
             if not _is_inline(element):
@@ -120,6 +130,8 @@ class Processor(object):
         for idx, t in enumerate(element.contents):
             if isinstance(t, Tag):
                 self._process_tag(t)
+            elif isinstance(t, Comment):
+                self._comment(t)
             elif isinstance(t, NavigableString) and not self._is_empty(t):
                 txt = t.strip('\n\r')
                 if idx == 0 and not _is_inline(element):
@@ -153,6 +165,13 @@ class Processor(object):
             self._text_buffer.append(unicode(tag))
         else:
             self._write(unicode(tag), sep=LF * 2)
+
+    def _comment(self, tag):
+        if not self._options['critic_markup']:
+            return
+        self._text_buffer.append(u"{>>")
+        self._text_buffer.append(tag)
+        self._text_buffer.append(u"<<}")
 
     def _tag_a(self, tag):
         if tag.get('href'):
@@ -400,13 +419,43 @@ class Processor(object):
 
     # CriticMarkup support
     def _tag_ins(self, tag):
-        pass
+        if tag.string:
+            self._text_buffer.append(u"{++")
+            self._process(tag)
+            self._text_buffer.append(u"++}")
+        else:
+            # this is a very hacky solution
+            self._text_buffer.append(u"{++")
+            for t in reversed(tag.contents):
+                if isinstance(t, Tag):
+                    t.append(u"++}")
+                    break
+                if isinstance(t, NavigableString) and not self._is_empty(t):
+                    t += u"++}"
+                    break
+            self._process(tag)
 
     def _tag_del(self, tag):
-        self._text_buffer.append(u"~~")
-        self._process(tag)
-        self._text_buffer.append(u"~~")
+        if tag.string:
+            self._text_buffer.append(u"{--")
+            self._process(tag)
+            self._text_buffer.append(u"--}")
+        else:
+            # this is a very hacky solution
+            self._text_buffer.append(u"{--")
+            for t in reversed(tag.contents):
+                if isinstance(t, Tag):
+                    t.append(u"--}")
+                    break
+                if isinstance(t, NavigableString) and not self._is_empty(t):
+                    t += u"--}"
+                    break
+            self._process(tag)
 
+    def _tag_u(self, tag):
+        self._text_buffer.append(u"{==")
+        self._process(tag)
+        self._text_buffer.append(u"==}{>><<}")
 
     def _write_block(self, sep=u''):
         if not self._attributes_stack and not self._text_buffer:
@@ -632,15 +681,17 @@ def main(options):
     markup = html2md(options.infile.read(),
                      attrs=options.attrs,
                      footnotes=options.footnotes,
-                     fenced_code=options.fenced_code)
+                     fenced_code=options.fenced_code,
+                     critic_markup=options.critic_markup)
     return markup
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Transform HTML file to Markdown')
+    parser.add_argument('-f', '--footnotes', action='store_true', dest='footnotes', help='Enable footnote processing (custom Markdown extension)')
+    parser.add_argument('-c', '--fenced_code',  choices=('github', 'php'), dest='fenced_code', help='Enable fenced code output')
+    parser.add_argument('-m', '--critic_markup', action='store_true', dest='critic_markup', help='Enable support for CriticMarkup')
     parser.add_argument('-a', '--attrs', action='store_true', dest='attrs', help='Enable element attributes in the output (custom Markdown extension)')
-    parser.add_argument('-f', '--footnotes', action='store_true', dest='footnotes', help='Enabled footnote processing (custom Markdown extension)')
-    parser.add_argument('--fenced_code', '--fencedcode', '--fenced', choices=('github', 'php'), dest='fenced_code', help='Enabled fenced code output')
     parser.add_argument('-e', '--encoding', help='Provide an encoding for reading the input')
     parser.add_argument('infile', nargs='?', type=argparse.FileType('rb'), default=sys.stdin)
     options = parser.parse_args()
