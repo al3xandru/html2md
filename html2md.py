@@ -14,9 +14,9 @@ from BeautifulSoup import Tag, NavigableString, Declaration, ProcessingInstructi
 __author__ = 'alex'
 
 
-def html2md(text, attrs=False, footnotes=False):
+def html2md(text, attrs=False, footnotes=False, fenced_code='default'):
     """Simple API"""
-    proc = Processor(text, attrs=attrs, footnotes=footnotes)
+    proc = Processor(text, attrs=attrs, footnotes=footnotes, fenced_code=fenced_code)
     return proc.get_output()
 
 convert = html2md
@@ -54,6 +54,7 @@ class Processor(object):
         self._options = {
             'attrs': True,
             'footnotes': False,
+            'fenced_code': 'default'
         }
         self._options.update(kwargs)
 
@@ -357,10 +358,31 @@ class Processor(object):
         self._push_attributes(tag=tag)
         self._inside_block = True
         self._indentation_stack.append('pre')
-        # FIXME
-        pre_text = unicode(tag)
-        pre_text = pre_text.replace('<pre>', '').replace('</pre>', '').replace('<code>', '').replace('</code>', '')
-        self._text_buffer.append(pre_text.strip(' \t\n\r'))
+        _prefix = u''
+        _suffix = u''
+        if self._options['fenced_code'] == 'github':
+            _prefix = u"```"
+            attrs = dict(tag.attrs)
+            if 'class' in attrs:
+                _prefix += attrs['class'].strip()
+            _prefix += LF
+            _suffix = LF + u"```"
+        elif self._options['fenced_code'] == 'php':
+            _prefix = u"~~~"
+            attrs = dict(tag.attrs)
+            if 'class' in attrs:
+                _prefix += attrs['class'].strip()
+            _prefix += LF
+            _suffix = LF + u"~~~"
+
+        if tag.string:
+            self._text_buffer.append(_prefix + tag.renderContents().strip(' \t\n\r') + _suffix)
+        else:
+            elements = [c for c in tag.contents if isinstance(c, Tag)]
+            if len(elements) == 1 and elements[0].name == 'code':
+                self._text_buffer.append(_prefix + elements[0].renderContents().strip(' \t\n\r') + _suffix)
+            else:
+                self._text_buffer.append(_prefix + tag.renderContents().strip(' \t\n\r') + _suffix)
         self._write_block(sep=LF*2)
         self._indentation_stack.pop()
         self._inside_block = False
@@ -397,8 +419,13 @@ class Processor(object):
                 indentation += u'> '
                 extra_indentation += u'> '
             elif indent_type == 'pre':
-                indentation += u' ' * 4
-                extra_indentation += u' ' * 4
+                if self._options['fenced_code'] == 'default':
+                    indentation += u' ' * 4
+                    extra_indentation += u' ' * 4
+                elif self._options['fenced_code'] == 'github':
+                    pass
+                elif self._options['fenced_code'] == 'php':
+                    pass
             elif indent_type == 'ol':
                 indentation += u'1.  '
                 extra_indentation += u' ' * 4
@@ -418,6 +445,7 @@ class Processor(object):
         if self._options['attrs']:
             for tagname, attrs in self._attributes_stack:
                 attributes.append(self.elemAttrs(tagname, attrs, '..'))
+
         self._attributes_stack = []
 
         txt = indentation
@@ -601,7 +629,10 @@ _ENTITY_DICT = {
 
 
 def main(options):
-    markup = html2md(options.infile.read(), attrs=options.attrs, footnotes=options.footnotes)
+    markup = html2md(options.infile.read(),
+                     attrs=options.attrs,
+                     footnotes=options.footnotes,
+                     fenced_code=options.fenced_code)
     return markup
 
 
@@ -609,6 +640,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Transform HTML file to Markdown')
     parser.add_argument('-a', '--attrs', action='store_true', dest='attrs', help='Enable element attributes in the output (custom Markdown extension)')
     parser.add_argument('-f', '--footnotes', action='store_true', dest='footnotes', help='Enabled footnote processing (custom Markdown extension)')
+    parser.add_argument('--fenced_code', '--fencedcode', '--fenced', choices=('github', 'php'), dest='fenced_code', help='Enabled fenced code output')
     parser.add_argument('-e', '--encoding', help='Provide an encoding for reading the input')
     parser.add_argument('infile', nargs='?', type=argparse.FileType('rb'), default=sys.stdin)
     options = parser.parse_args()

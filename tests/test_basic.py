@@ -60,7 +60,7 @@ class BasicTest(unittest.TestCase):
     def test_h2_with_link(self):
         in_html = '''<h2 id="h2_id">Very simple H2 with <a href="http://yahoo.com" id="link_id">link</a> to</h2>'''
         out_md = '''## Very simple H2 with [link](http://yahoo.com "{{#link_id}}") to [..]("{{h2:#h2_id}}")'''
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, attrs=True))
 
     def test_img_attributes(self):
         in_html = '''<p>

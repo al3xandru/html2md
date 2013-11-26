@@ -21,7 +21,7 @@ And an image directly inside a div:
 
 And now two advanced examples [..]("{{p:#pid andpclass}}")'''.lstrip()
 
-        assertEq(out_md, html2md.html2md(in_html))
+        assertEq(out_md, html2md.html2md(in_html, attrs=True))
 
     def test_complex_div_p(self):
         in_html = u'''
