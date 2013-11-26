@@ -40,7 +40,7 @@ You can pass in different options
 
 *   `footnotes`: `True|False` (default `False`) convert footnotes
 *   `fenced_code`: `default|github|php` (default: `default`) convert code snippets into fenced code
-*   `attrs`: convert HTML attributes. <em>This is a custom extension and should not be used.</em>
+*   `attrs`: convert HTML attributes. _This is a custom extension and should not be used_.
 
 
 
