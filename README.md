@@ -1,9 +1,10 @@
 # html2md
 
-html2md is a Python script that converts a page of HTML into [Markdown][markdown].
+html2md is a Python script that converts HTML (complete or fragments) into [Markdown][markdown].
 
 html2md was inspired by Aaron Swartz's [html2text][html2text]
-and is adding support for missing HTML elements that are common in rich HTML pages.
+and is adding support for missing elements that are common in HTML pages
+without compromising the Markdown format.
 
 ## Usage
 
@@ -28,11 +29,11 @@ optional arguments:
                         Provide an encoding for reading the input
 ```
 
-Or you can use it from within Python:
+Using it from your code:
 
 ```python
 import html2md
-print html2text.html2md("<p>Hello, world.</p>")
+print html2text.html2md("<p>Getting rid of HTML with html2md. Yey!</p>")
 ```
 
 You can pass in different options
