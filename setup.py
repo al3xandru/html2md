@@ -11,7 +11,7 @@ with open('LICENSE.md') as f:
 
 setup(
     name='html2md',
-    version='0.1',
+    version='0.22',
     description='An HTML to Markdown converter inspired by Aaron Swartz\'s html2text' ,
     long_description=readme,
     author='Alex Popescu',
