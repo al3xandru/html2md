@@ -14,9 +14,14 @@ from BeautifulSoup import Tag, NavigableString, Declaration, ProcessingInstructi
 __author__ = 'alex'
 
 
-def html2md(text, attrs=False, footnotes=False, fenced_code='default', critic_markup=False):
+def html2md(text, attrs=False, footnotes=False, fenced_code='default', critic_markup=False, def_list=False):
     """Simple API"""
-    proc = Processor(text, attrs=attrs, footnotes=footnotes, fenced_code=fenced_code, critic_markup=critic_markup)
+    proc = Processor(text,
+                     attrs=attrs,
+                     footnotes=footnotes,
+                     fenced_code=fenced_code,
+                     critic_markup=critic_markup,
+                     def_list=def_list)
     return proc.get_output()
 
 convert = html2md
@@ -55,7 +60,8 @@ class Processor(object):
             'attrs': True,
             'footnotes': False,
             'fenced_code': 'default',
-            'critic_markup': False
+            'critic_markup': False,
+            'def_list': False
         }
         self._options.update(kwargs)
 
@@ -103,6 +109,10 @@ class Processor(object):
             self._elements['ins'] = self._tag_ins
             self._elements['del'] = self._tag_del
             self._elements['u'] = self._tag_u
+        if self._options['def_list']:
+            self._elements['dl'] = self._tag_dl
+            self._elements['dt'] = self._tag_dt
+            self._elements['dd'] = self._tag_dd
 
 
     def get_output(self):
@@ -261,20 +271,33 @@ class Processor(object):
             self._write(unicode(tag), sep=LF * 2)
 
     def _tag_dl(self, tag):
+        self._inside_block = True
+        self._process(tag)
+        self._write_block(sep=LF * 2)
+        self._inside_block = False
 
-        if tag.name == 'dl':
-            # FIXME
-            return
-        if tag.name == 'dt':
-            self._process(tag)
+    def _tag_dt(self, tag):
+        self._process(tag)
+        self._write_block(sep=LF)
+
+    def _tag_dd(self, tag):
+        self._indentation_stack.append('dd')
+        self._process(tag)
+        has_multi_dd = False
+        t = tag.nextSibling
+        while t:
+            if isinstance(t, Tag):
+                if t.name == 'dd':
+                    has_multi_dd = True
+                    break
+                else:
+                    break
+            t = t.nextSibling
+        if has_multi_dd:
             self._write_block(sep=LF)
-            return
-        if tag.name == 'dd':
-            self._text_buffer.append(u':')
-            self._text_buffer.append(u' ' * 4)
-            self._process(tag)
+        else:
             self._write_block(sep=LF * 2)
-            return
+        self._indentation_stack.pop()
 
     def _tag_h(self, tag):
         self._push_attributes(tag=tag)
@@ -489,6 +512,9 @@ class Processor(object):
             elif indent_type == 'col':
                 indentation += (u' ' * 4)
                 extra_indentation += (u' ' * 4)
+            elif indent_type == 'dd':
+                indentation += (u':   ')
+                extra_indentation += (u' ' * 4)
 
         attributes = []
         if self._options['attrs']:
@@ -682,16 +708,18 @@ def main(options):
                      attrs=options.attrs,
                      footnotes=options.footnotes,
                      fenced_code=options.fenced_code,
-                     critic_markup=options.critic_markup)
+                     critic_markup=options.critic_markup,
+                     def_list=options.def_list)
     return markup
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Transform HTML file to Markdown')
-    parser.add_argument('-f', '--footnotes', action='store_true', dest='footnotes', help='Enable footnote processing (custom Markdown extension)')
-    parser.add_argument('-c', '--fenced_code',  choices=('github', 'php'), dest='fenced_code', help='Enable fenced code output')
-    parser.add_argument('-m', '--critic_markup', action='store_true', dest='critic_markup', help='Enable support for CriticMarkup')
-    parser.add_argument('-a', '--attrs', action='store_true', dest='attrs', help='Enable element attributes in the output (custom Markdown extension)')
+    parser.add_argument('-f', '--footnotes', action='store_true', dest='footnotes', help='Enables conversion of footnotes (custom Markdown extension)')
+    parser.add_argument('-c', '--fenced_code', choices=('github', 'php'), dest='fenced_code', help='Enables fenced code output')
+    parser.add_argument('-d', '--def_list', action='store_true', dest='def_list', help='Enables conversion of definition lists')
+    parser.add_argument('-m', '--critic_markup', action='store_true', dest='critic_markup', help='Enables support for CriticMarkup in output')
+    parser.add_argument('-a', '--attrs', action='store_true', dest='attrs', help='Enables element attributes in the output (custom Markdown extension)')
     parser.add_argument('-e', '--encoding', help='Provide an encoding for reading the input')
     parser.add_argument('infile', nargs='?', type=argparse.FileType('rb'), default=sys.stdin)
     options = parser.parse_args()

@@ -12,6 +12,7 @@ import test_spacing
 import test_frag
 import test_pre
 import test_criticmarkup
+import test_definitionlist
 
 def suite():
     return unittest.TestSuite([
@@ -26,7 +27,8 @@ def suite():
         test_spacing.suite(),
         test_frag.suite(),
         test_pre.suite(),
-        test_criticmarkup.suite()])
+        test_criticmarkup.suite(),
+        test_definitionlist.suite()])
 
 
 if __name__ == '__main__':
