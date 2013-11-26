@@ -14,9 +14,12 @@ from BeautifulSoup import Tag, NavigableString, Declaration, ProcessingInstructi
 __author__ = 'alex'
 
 
-def html2md(text, attrs=True, footnotes=False):
+def html2md(text, attrs=False, footnotes=False):
+    """Simple API"""
     proc = Processor(text, attrs=attrs, footnotes=footnotes)
     return proc.get_output()
+
+convert = html2md
 
 _KNOWN_ELEMENTS = ('a', 'b', 'strong', 'blockquote', 'br', 'center', 'code', 'dl', 'dt', 'dd', 'div', 'em', 'i',
                    'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'img', 'li', 'ol', 'ul', 'p', 'pre', 'tt', 'sup')
@@ -564,7 +567,8 @@ class Processor(object):
             footnote = u''.join(buffer).strip(' \n\r')
             if footnote.endswith('()'):
                 footnote = footnote[:-2]
-            self._write(footnote, sep=os.linesep)
+
+            self._write(footnote, sep=LF*2)
 
 
 def _is_inline(element):
@@ -596,25 +600,19 @@ _ENTITY_DICT = {
 }
 
 
-def main(instream):
-    markup = html2md(instream.read(), attrs=False)
-
+def main(options):
+    markup = html2md(options.infile.read(), attrs=options.attrs, footnotes=options.footnotes)
     return markup
-    #parser = argparse.ArgumentParser(description='Transform HTML file to Markdown')
-    #parser.add_argument('input', type=argparse.FileType('r'), default=sys.stdin, help='Input file or stream')
-    #options = parser.parse_args(sys.argv)
-    #text = options.input.read()
 
 
 if __name__ == '__main__':
-    input = sys.argv[1]
-    if not os.path.exists(input):
-        print "Input must be either a directory or a file"
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description='Transform HTML file to Markdown')
+    parser.add_argument('-a', '--attrs', action='store_true', dest='attrs', help='Enable element attributes in the output (custom Markdown extension)')
+    parser.add_argument('-f', '--footnotes', action='store_true', dest='footnotes', help='Enabled footnote processing (custom Markdown extension)')
+    parser.add_argument('-e', '--encoding', help='Provide an encoding for reading the input')
+    parser.add_argument('infile', nargs='?', type=argparse.FileType('rb'), default=sys.stdin)
+    options = parser.parse_args()
 
-    if os.path.isfile(input):
-        result = main(open(input))
-    else:
-        result = main(sys.stdin)
+    result = main(options)
 
     print result.encode('utf8')
