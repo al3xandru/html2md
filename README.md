@@ -33,7 +33,7 @@ Using it from your code:
 
 ```python
 import html2md
-print html2text.html2md("<p>Getting rid of HTML with html2md. Yey!</p>")
+print html2md.html2md("<p>Getting rid of HTML with html2md. Yey!</p>")
 ```
 
 You can pass in different options
